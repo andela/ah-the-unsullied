@@ -1,3 +1,5 @@
+import dj_database_url
+
 """
 Django settings for authors project.
 
@@ -80,10 +82,8 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    # read the database environ
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
 # Password validation
@@ -138,6 +138,6 @@ REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'error',
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'authors.apps.authentication.backends.JWTAuthentication',
+        # 'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
