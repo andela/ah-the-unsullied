@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/andela/ah-the-unsullied.svg?branch=develop)](https://travis-ci.org/andela/ah-the-unsullied)
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-the-unsullied/badge.svg)](https://coveralls.io/github/andela/ah-the-unsullied)
 
 Authors Haven - A Social platform for the creative at heart.
 =======
