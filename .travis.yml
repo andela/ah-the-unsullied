@@ -7,22 +7,23 @@ python:
 services:
   - postgresql
 
+env:
+  - DJANGO_SETTINGS_MODULE="authors.settings"
 # Install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install pytest
   - pip install coveralls
 before_script:
- - psql -c 'create database ah_unsullied_test' -U postgres
+ - psql -c "create database ah_theunsullied;" -U postgres
 
 # Run tests
 script:
-  - python manage.py makemigrations 
-  - python manage.py migrate 
-  - coverage run --source=authors/ manage.py test 
+  - python manage.py makemigrations
+  - python manage.py migrate
+  - python manage.py test
+  - coverage run --source=authors/ manage.py test
   - coverage report
 
 # Generate coverage report
 after_success:
   - coveralls
-
