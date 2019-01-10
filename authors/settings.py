@@ -44,9 +44,12 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
 
+
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -81,14 +84,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'authors.wsgi.application'
 
-
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
        'NAME':os.getenv('DATABASE_URL')
    }
 }
-DATABASES['default']=  dj_database_url.config()
+
+DATABASES['default'] = dj_database_url.config()
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -151,6 +154,12 @@ REST_FRAMEWORK = {
     ),
 }
 
+# Do not implement sessions at the moment since authentication
+# does not have token based authentication. Once the authentication
+# via JWT is implemented the settings should be changed.
+# Uses basic authentication.
+
+
 #Jwt configuration
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER':
@@ -187,3 +196,16 @@ JWT_AUTH = {
 }
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+SWAGGER_SETTINGS = {
+    'SHOW_REQUEST_HEADERS': True,
+    'USE_SESSION_AUTH': False,
+    'DOC_EXPANSION': 'list',
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    }
+}
