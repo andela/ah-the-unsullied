@@ -20,8 +20,7 @@ before_script:
 script:
   - python manage.py makemigrations
   - python manage.py migrate
-  - python manage.py test
-  - coverage run --source=authors/ manage.py test
+  - pytest --cov-report term-missing --cov=authors/apps/authentication -p no:warnings
   - coverage report
 
 # Generate coverage report
