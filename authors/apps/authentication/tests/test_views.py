@@ -17,9 +17,9 @@ class TestTokenGeneration(TestCase):
     def setUp(self):
         self.user_data = {
             'user': {
-                'username': 'fooo',
+                'username': 'Allan123',
                 'email': 'cake@foo.com',
-                'password': 'yertg234D'
+                'password': 'Yertg234D#'
             }
         }
 
