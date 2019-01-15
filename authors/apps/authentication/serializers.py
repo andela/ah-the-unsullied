@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from .models import User
 from .backends import get_jwt_token
@@ -9,18 +10,67 @@ from .backends import get_jwt_token
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
+    def __init__(self, *args, **kwargs):
+        super(RegistrationSerializer, self).__init__(*args, **kwargs)
+
+        # Override the default error_messages with a custom field error
+        for field in self.fields:
+            error_messages = self.fields[field].error_messages
+            error_messages['null'] = error_messages['blank'] \
+                = error_messages['required'] \
+                = 'Please supply your {}.'.format(field)
+
+    # Ensure the username entered is unique and has a descriptive error message
+    # when a duplicate username is entered and an invalid username.
+    username = serializers.RegexField(
+        regex='^[A-Za-z\-\_]+\d*$',
+        min_length=3,
+        max_length=20,
+        required=True,
+        validators=[UniqueValidator(
+            queryset=User.objects.all(),
+            message='The username already exists. Kindly try another.'
+        )],
+        error_messages={
+            'min_length': 'Username allows a minimum of 3 characters.',
+            'max_length': 'Username allows a maximum of 20 characters.',
+            'invalid': 'Username should contain alphanumeric characters.'
+        }
+    )
+
+    # Ensure the email entered is unique and has a descriptive error message
+    # when a duplicate email is entered and an invalid email address.
+    email = serializers.EmailField(
+        validators=[UniqueValidator(
+            queryset=User.objects.all(),
+            message='Email already exists. Please enter another email or sign in'
+        )],
+        error_messages={
+            'invalid': 'Please enter a valid email address'
+        }
+    )
+
     # Ensure passwords are at least 8 characters long, no longer than 128
     # characters, and can not be read by the client.
-    password = serializers.CharField(
+    password = serializers.RegexField(
+        regex=r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\!\@#\$%\^&]).*',
         max_length=128,
         min_length=8,
-        write_only=True
-    )
+        write_only=True,
+        error_messages={
+            'max_length': 'Password allows a maximum of 128 characters.',
+            'min_length': 'Password allows a minimum of 8 characters.',
+            'invalid': 'Password must contain at least 1 letter, '
+                       'a number and a special character',
+        })
     token = serializers.SerializerMethodField()
 
     def get_token(self, obj):
         token = get_jwt_token(obj)
         return token
+
+    # The client should not be able to send a token along with a registration
+    # request. Making `token` read-only handles that for us.
 
     class Meta:
         model = User
@@ -37,6 +87,7 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
+
     token = serializers.CharField(read_only=True)
 
     def validate(self, data):
