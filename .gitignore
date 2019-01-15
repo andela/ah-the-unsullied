@@ -95,6 +95,4 @@ ENV/
 # SQLite3
 db.sqlite3
 
-# Migrations
-**/migrations/*
-!**/migrations/__init__.py
+.DS_Store
