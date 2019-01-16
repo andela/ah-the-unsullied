@@ -3,8 +3,8 @@ from .views import (
     LoginAPIView, RegistrationAPIView, UserRetrieveUpdateAPIView
 )
 
-"""
-Django 2.0 requires the app_name variable set when using include namespace
+""" Django 2.0 requires the app_name variable set when using include 
+namespace
 """
 app_name = 'authentication'
 
