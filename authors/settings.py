@@ -40,16 +40,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'cloudinary',
     'corsheaders',
     'django_extensions',
+    'rest_framework_swagger',
     'rest_framework',
-
 
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
 
-    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME':os.getenv('DATABASE_URL')
+       'NAME': os.getenv('DATABASE_URL')
    }
 }
 
@@ -154,13 +154,8 @@ REST_FRAMEWORK = {
     ),
 }
 
-# Do not implement sessions at the moment since authentication
-# does not have token based authentication. Once the authentication
-# via JWT is implemented the settings should be changed.
-# Uses basic authentication.
+# Jwt configuration
 
-
-#Jwt configuration
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER':
     'rest_framework_jwt.utils.jwt_encode_handler',
@@ -195,6 +190,13 @@ JWT_AUTH = {
 
 }
 
+CLOUDINARY = {
+    'cloud_name': os.getenv('CLOUDINARY_NAME'),
+    'api_key': os.getenv('CLOUDINARY_KEY'),
+    'api_secret': os.getenv('CLOUDINARY_SECRET'),
+    'secure': True
+}
+APPEND_SLASH = False
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 SWAGGER_SETTINGS = {
