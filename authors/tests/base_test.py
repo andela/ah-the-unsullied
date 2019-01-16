@@ -1,6 +1,12 @@
 # django imports
-from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.urls import reverse
+
+# local imports
+from authors.apps.authentication.activate import account_activation_token
+from authors.apps.authentication.models import User
 
 
 class TestBase(APITestCase):
@@ -86,3 +92,20 @@ class TestBase(APITestCase):
                 "email": "sammy@gmail.com",
                 "password": "A23@"
             }}
+
+    def register_user(self):
+        return self.client.post(
+            self.user_url,
+            self.user_data,
+            format="json"
+        )
+
+    def get_verify_url(self, user):
+
+        self.register_user()
+        user_to_activate = User.objects.get(username=user['user']['username'])
+        pk = urlsafe_base64_encode(force_bytes(user_to_activate.id)).decode()
+        token = account_activation_token.make_token(user_to_activate)
+        url = reverse('authentication:activate', kwargs={"pk": pk,
+                                                         "token": token})
+        return url

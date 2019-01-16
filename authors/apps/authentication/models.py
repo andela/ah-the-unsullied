@@ -44,7 +44,7 @@ class UserManager(BaseUserManager):
 
       user = self.create_user(username, email, password)
       user.is_superuser = True
-      user.is_staff = True
+      user.is_staff = False
       user.save()
 
       return user
@@ -74,6 +74,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # log into the Django admin site. For most users, this flag will always be
     # falsed.
     is_staff = models.BooleanField(default=False)
+
+    # The is_verified is used to indicate if the user account is verified.
+    is_verified = models.BooleanField(default=False)
 
     # A timestamp representing when this object was created.
     created_at = models.DateTimeField(auto_now_add=True)
