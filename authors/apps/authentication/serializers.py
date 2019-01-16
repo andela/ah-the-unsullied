@@ -22,6 +22,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     # Ensure the username entered is unique and has a descriptive error message
     # when a duplicate username is entered and an invalid username.
+
     username = serializers.RegexField(
         regex='^[A-Za-z\-\_]+\d*$',
         min_length=3,
@@ -43,7 +44,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         validators=[UniqueValidator(
             queryset=User.objects.all(),
-            message='Email already exists. Please enter another email or sign in'
+            message='Email already exists. '
+                    'Please enter another email or sign in'
         )],
         error_messages={
             'invalid': 'Please enter a valid email address'
@@ -207,6 +209,36 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ActivateSerializer(serializers.Serializer):
-
     class Meta:
         pass
+
+
+class EmailCheckSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def __init__(self, *args, **kwargs):
+        super(EmailCheckSerializer, self).__init__(*args, **kwargs)
+
+        # Override the default error_messages with a custom field error
+        for field in self.fields:
+            error_messages = self.fields[field].error_messages
+            error_messages['null'] = error_messages['blank'] \
+                = error_messages['required'] \
+                = 'Please supply your {}.'.format(field)
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    password = serializers.RegexField(
+        regex=r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\!\@#\$%\^&]).*',
+        max_length=128,
+        min_length=8,
+        write_only=True,
+        style={'input_type': 'password', 'placeholder': 'Password'},
+        error_messages={
+            'max_length': 'Password allows a maximum of 128 characters.',
+            'min_length': 'Password allows a minimum of 8 characters.',
+            'invalid': 'Password must contain at least 1 letter, '
+                       'a number and a special character',
+        })
+    confirm_password = serializers.CharField(
+        style={'input_type': 'password', 'placeholder': 'Confirm Password'})

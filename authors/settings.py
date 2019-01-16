@@ -43,13 +43,12 @@ INSTALLED_APPS = [
     'cloudinary',
     'corsheaders',
     'django_extensions',
-    'rest_framework_swagger',
     'rest_framework',
+    'rest_framework_swagger',
 
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
-
 ]
 
 MIDDLEWARE = [
@@ -98,16 +97,20 @@ DATABASES['default'] = dj_database_url.config()
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation'
+                '.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation'
+                '.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation'
+                '.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation'
+                '.NumericPasswordValidator',
     },
 ]
 
@@ -155,7 +158,6 @@ REST_FRAMEWORK = {
 }
 
 # Jwt configuration
-
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER':
     'rest_framework_jwt.utils.jwt_encode_handler',
@@ -199,6 +201,7 @@ CLOUDINARY = {
 APPEND_SLASH = False
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
 SWAGGER_SETTINGS = {
     'SHOW_REQUEST_HEADERS': True,
     'USE_SESSION_AUTH': False,
@@ -213,7 +216,7 @@ SWAGGER_SETTINGS = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = os.getenv('SMTP_HOST')
 EMAIL_HOST_USER = os.getenv('HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('HOST_PASSWORD')
 EMAIL_USE_TLS = True

@@ -1,8 +1,8 @@
 # django imports
-from rest_framework.test import APITestCase, APIClient
+from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.urls import reverse
+from rest_framework.test import APITestCase, APIClient
 
 # local imports
 from authors.apps.authentication.activate import account_activation_token
@@ -54,6 +54,9 @@ class TestBase(APITestCase):
                 "email": "",
                 "password": "A23DVFRss@"
             }}
+        self.blank_mail = {
+            "email": ""
+        }
 
         self.empty_password = {
             "user": {
@@ -92,13 +95,22 @@ class TestBase(APITestCase):
                 "email": "sammy@gmail.com",
                 "password": "A23@"
             }}
-
-    def register_user(self):
-        return self.client.post(
-            self.user_url,
-            self.user_data,
-            format="json"
-        )
+        self.signup_user_data = {
+            'user': {
+                'username': 'Allan123',
+                'email': 'cake@foo.com',
+                'password': 'Yertg234D#'
+            }
+        }
+        self.reset_password_email = {
+            "email": "sam@gmail.com"
+        }
+        self.inexistent_email = {
+            "email": "job@yahoo.com"
+        }
+        self.reset_password_invalid_email = {
+            "email": "kenyamoja@gmail.com"
+        }
 
     def get_verify_url(self, user):
 
@@ -109,3 +121,66 @@ class TestBase(APITestCase):
         url = reverse('authentication:activate', kwargs={"pk": pk,
                                                          "token": token})
         return url
+
+    def register_user(self, ):
+        return self.client.post(
+            self.user_url,
+            self.user_data,
+            format='json'
+        )
+
+    def register_duplicate_email(self, ):
+        return self.client.post(
+            self.user_url,
+            self.user_data,
+            format='json'
+        )
+
+    def register_duplicate_username(self, ):
+        return self.client.post(
+            self.user_url,
+            self.test_username2,
+            format='json'
+        )
+
+    def register_empty_email(self, ):
+        return self.client.post(
+            self.user_url,
+            self.empty_email,
+            format='json'
+        )
+
+    def register_empty_password(self, ):
+        return self.client.post(
+            self.user_url,
+            self.empty_password,
+            format='json'
+        )
+
+    def register_empty_username(self, ):
+        return self.client.post(
+            self.user_url,
+            self.empty_username,
+            format='json'
+        )
+
+    def login_user(self, ):
+        return self.client.post(
+            self.login_url,
+            self.login_data,
+            format="json"
+        )
+
+    def login_wrong_user_details(self, ):
+        return self.client.post(
+            self.login_url,
+            self.test_wrong_login,
+            format="json"
+        )
+
+    def login_empty_email(self, ):
+        return self.client.post(
+            self.login_url,
+            self.test_empty_email,
+            format="json"
+        )
