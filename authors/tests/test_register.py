@@ -1,5 +1,6 @@
 # python and Django imports
 from rest_framework.views import status
+import json
 
 # local imports
 from .base_test import TestBase
@@ -79,3 +80,24 @@ class TestRegister(TestBase):
             format='json'
             )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_update(self):
+        """Test user update"""
+        self.client.post(
+            self.user_url,
+            self.user_data,
+            format='json'
+            )
+        res = self.client.post(
+                self.login_url,
+                data=json.dumps(self.user_data),
+                content_type='application/json'
+            )
+        token = res.data['token']
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        response = self.client.put(
+            self.update_url,
+            self.update_data,
+            format='json'
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

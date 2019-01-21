@@ -14,6 +14,7 @@ class TestBase(APITestCase):
         self.client = APIClient()
         self.login_url = reverse('authentication:login_url')
         self.user_url = reverse('authentication:signup_url')
+        self.update_url = reverse('authentication:user_update')
 
         self.user_data = {
             "user": {
@@ -21,7 +22,12 @@ class TestBase(APITestCase):
                 "email": "sam@gmail.com",
                 "password": "A23DVFRss@"
             }}
-
+        self.update_data = {
+            "user": {
+                "username": "sam2",
+                "email": "sam@gmail.com",
+                "password": "A23DVFRss@2"
+            }}
         self.test_username = {
             "user": {
                 "username": "sam",
