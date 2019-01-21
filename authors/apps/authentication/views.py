@@ -1,23 +1,28 @@
-from rest_framework import status
-from rest_framework.generics import (RetrieveUpdateAPIView, CreateAPIView,
-                                     ListAPIView)
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from rest_framework.response import Response
-from django.template.loader import render_to_string
+import os
+from datetime import datetime, timedelta
 
-from django.urls import reverse
+import jwt
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from jwt import ExpiredSignatureError
+from rest_framework import status
+from rest_framework.generics import (
+    RetrieveUpdateAPIView, CreateAPIView, UpdateAPIView, ListAPIView
+)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
-# Local imports
+from .activate import account_activation_token
+from .models import User
 from .renderers import UserJSONRenderer
+# Local imports
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
-    ActivateSerializer
+    EmailCheckSerializer, PasswordResetSerializer, ActivateSerializer
 )
-from .models import User
-from .activate import account_activation_token
 
 
 class RegistrationAPIView(CreateAPIView):
@@ -162,3 +167,76 @@ class ActivationLinkView(ListAPIView):
         # Else show the link is invalid
         invalid_message = 'The link is invalid'
         return Response(invalid_message, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordReset(CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = EmailCheckSerializer
+
+    def post(self, request):
+        email = request.data.get('email', {})
+        serializer = self.serializer_class(data={"email": email})
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = User.objects.get(email=email)
+            username = user.username
+        except User.DoesNotExist:
+            message = {"message": "The Email provided is not registered"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+        token = jwt.encode({
+            "email": email, "iat": datetime.now(),
+            "exp": datetime.utcnow() + timedelta(hours=1)},
+            os.getenv('SECRET_KEY'), algorithm='HS256').decode()
+
+        hosting = request.get_host()
+
+        my_link = \
+            'https://' + hosting + '/api/users/password-done/{}'.format(token)
+        message = render_to_string(
+            'reset_email.html', {
+                'user': email,
+                'domain': my_link,
+                'token': token,
+                'username': username,
+                'link': my_link
+            })
+
+        send_mail('You requested password reset',
+                  'Reset your password', '', [email, ], html_message=message,
+                  fail_silently=False)
+        return Response({"message": "Email sent successfully. "
+                                    "Find the password reset link in your "
+                                    "email"},
+                        status=status.HTTP_200_OK)
+
+
+class PasswordDone(UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = PasswordResetSerializer
+    lookup_url_kwarg = 'token'
+
+    def put(self, request, **kwargs):
+        token = self.kwargs.get(self.lookup_url_kwarg)
+        try:
+            decoded_token = jwt.decode(token, os.getenv('SECRET_KEY'),
+                                       algorithm='HS256')
+            email = decoded_token.get('email')
+            user = User.objects.get(email=email)
+            password = request.data.get('password')
+            confirm_password = request.data.get('confirm_password')
+            serializer = self.serializer_class(data={"password": password,
+                                                     "confirm_password":
+                                                         confirm_password})
+            serializer.is_valid(raise_exception=True)
+
+            if password != confirm_password:
+                return Response({"message": "Passwords do not match"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(password)
+            user.save()
+        except ExpiredSignatureError:
+            message = {"message": "The link has expired"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Password successfully updated"},
+                        status=status.HTTP_200_OK)
