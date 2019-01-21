@@ -111,7 +111,25 @@ class TestBase(APITestCase):
         self.reset_password_invalid_email = {
             "email": "kenyamoja@gmail.com"
         }
+        
+    def get_token(self):
+        """Register and login a user"""
 
+        # register user
+        self.client.post(
+            self.user_url,
+            self.user_data,
+            format='json'
+        )
+        self.client.get(self.get_verify_url(self.user_data))
+        response = self.client.post(
+            self.login_url,
+            self.login_data,
+            format="json"
+        )
+        token = response.data['token']
+        return token
+        
     def get_verify_url(self, user):
 
         self.register_user()
