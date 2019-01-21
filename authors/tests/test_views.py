@@ -2,33 +2,22 @@
 Module to test if token is returned during login_url/registration
 """
 from rest_framework import status
-from django.test import TestCase, Client
-from django.urls import reverse
 import json
 
 
-# initialize the APIClient app
-client = Client()
+# local imports
+from .base_test import TestBase
 
 
-class TestTokenGeneration(TestCase):
+class TestTokenGeneration(TestBase):
     """ Test user registration/login_url returns token """
-
-    def setUp(self):
-        self.user_data = {
-            'user': {
-                'username': 'Allan123',
-                'email': 'cake@foo.com',
-                'password': 'Yertg234D#'
-            }
-        }
 
     def test_token_gen_on_signup(self):
         """
         Test if a token is returned after registration
         """
-        response = client.post(
-            reverse('authentication:signup_url'),
+        response = self.client.post(
+            self.user_url,
             data=json.dumps(self.user_data),
             content_type='application/json'
         )
@@ -40,14 +29,15 @@ class TestTokenGeneration(TestCase):
         """
         Test if token is returned after login_url
         """
-        client.post(
-            reverse('authentication:signup_url'),
+        self.client.post(
+            self.login_url,
             data=json.dumps(self.user_data),
             content_type='application/json'
         )
-        response = client.post(
-            reverse('authentication:login_url'),
-            data=json.dumps(self.user_data),
+        self.client.get(self.get_verify_url(self.user_data))
+        response = self.client.post(
+            self.login_url,
+            data=json.dumps(self.login_data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)

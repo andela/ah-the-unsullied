@@ -18,6 +18,7 @@ class TestLogin(TestBase):
             self.user_data,
             format='json'
         )
+        self.client.get(self.get_verify_url(self.user_data))
         response = self.client.post(
             self.login_url,
             self.login_data,
@@ -58,3 +59,23 @@ class TestLogin(TestBase):
             json.loads(response.content)['errors']['email'][0],
             'This field may not be blank.'
         )
+
+    def test_login_unverified_user(self):
+        """This is the test for login unverified user."""
+
+        # register user
+        self.client.post(
+            self.user_url,
+            self.user_data,
+            format='json'
+        )
+        response = self.client.post(
+            self.login_url,
+            self.login_data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            json.loads(response.content)['errors']['error'][0],
+            'Check your email to Verify your account'
+             )

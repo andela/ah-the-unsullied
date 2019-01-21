@@ -34,6 +34,10 @@ class TestRegister(TestBase):
             format='json'
             )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            json.loads(response.content)['errors']['email'][0],
+            'Email already exists. Please enter another email or sign in'
+        )
 
     def test_register_duplicate_username(self):
         """This is the test for register with duplicate username."""
@@ -88,6 +92,7 @@ class TestRegister(TestBase):
             self.user_data,
             format='json'
             )
+        self.client.get(self.get_verify_url(self.user_data))
         res = self.client.post(
                 self.login_url,
                 data=json.dumps(self.user_data),
