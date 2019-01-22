@@ -1,5 +1,7 @@
 # django imports
+
 import json
+
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -22,40 +24,70 @@ class TestBase(APITestCase):
         self.login_url = reverse('authentication:login_url')
         self.user_url = reverse('authentication:signup_url')
         self.update_url = reverse('authentication:user_update')
+        self.articles_url = reverse('articles:article_create')
         self.article_url = reverse('articles:article_create')
+
+        self.rate = '/api/articles/{}/rate-article'
+        self.get_articles = '/api/articles/'
 
         self.user_data = {
             "user": {
                 "username": "sam",
                 "email": "sam@gmail.com",
                 "password": "A23DVFRss@"
-            }}
+            }
+        }
+        self.user_data2 = {
+            "user": {
+                "username": "abdi",
+                "email": "abdi@gmail.com",
+                "password": "A23DVFRss@"
+            }
+        }
         self.update_data = {
             "user": {
                 "username": "sam2",
                 "email": "sam@gmail.com",
                 "password": "A23DVFRss@2"
-            }}
+            }
+        }
         self.test_username = {
             "user": {
                 "username": "sam",
                 "email": "sam@gmail.com",
                 "password": "A23DVFRss@"
-            }}
+            }
+        }
+        self.user_data3 = {
+            "user": {
+                "username": "job",
+                "email": "job@gmail.com",
+                "password": "A23DVFRss@"
+            }
+        }
+        self.user_data4 = {
+            "user": {
+                "username": "jobless",
+                "email": "jobless@gmail.com",
+                "password": "A23DVFRss@"
+            }
+        }
 
         self.test_username2 = {
             "user": {
                 "username": "sam",
                 "email": "sly@gmail.com",
                 "password": "A23DVFRss@"
-            }}
+            }
+        }
 
         self.empty_email = {
             "user": {
                 "username": "sam",
                 "email": "",
                 "password": "A23DVFRss@"
-            }}
+            }
+        }
 
         self.blank_mail = {
             "email": ""
@@ -66,7 +98,8 @@ class TestBase(APITestCase):
                 "username": "sam",
                 "email": "sami@gmail.com",
                 "password": ""
-            }}
+            }
+        }
 
         self.empty_username = {
             "user": {
@@ -114,6 +147,11 @@ class TestBase(APITestCase):
         self.reset_password_invalid_email = {
             "email": "kenyamoja@gmail.com"
         }
+        self.article_data = {
+            "title": "new title",
+            "description": "happy feet",
+            "body": "It takes a Jacobian"
+        }
 
         self.valid_article_data = {
             "title": "another post",
@@ -131,7 +169,11 @@ class TestBase(APITestCase):
                 "username": "nesh",
                 "email": "nesh@gmail.com",
                 "password": "A23DVFRss@"
-            }}
+            }
+        }
+        self.test_rating = {"rating": "5"}
+        self.invalid_rating = {"rating": "10"}
+        self.new_rating = {"rating": "3"}
 
     def get_token(self):
         """Register and login a user"""
@@ -236,6 +278,27 @@ class TestBase(APITestCase):
             content_type='application/json'
         )
 
+    def get_token_signup_different_user(self):
+        return self.client.post(
+            reverse('authentication:signup_url'),
+            data=json.dumps(self.user_data2),
+            content_type='application/json'
+        )
+
+    def get_token_sign_another_user(self):
+        return self.client.post(
+            reverse('authentication:signup_url'),
+            data=json.dumps(self.user_data3),
+            content_type='application/json'
+        )
+
+    def get_token_sign_user_3(self):
+        return self.client.post(
+            reverse('authentication:signup_url'),
+            data=json.dumps(self.user_data4),
+            content_type='application/json'
+        )
+
     def authentication_token(self, ):
         res = self.get_token_on_signup()
         token = res.data['token']
@@ -250,3 +313,18 @@ class TestBase(APITestCase):
             data=json.dumps(self.valid_article_data),
             content_type='application/json'
         )
+
+    def authentication_token_2(self, ):
+        res = self.get_token_signup_different_user()
+        token = res.data['token']
+        return token
+
+    def another_authentication_token(self):
+        res = self.get_token_sign_another_user()
+        token = res.data['token']
+        return token
+
+    def authentication_token_3(self):
+        res = self.get_token_sign_user_3()
+        token = res.data['token']
+        return token

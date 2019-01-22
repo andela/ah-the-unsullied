@@ -4,9 +4,16 @@ from .utils import get_unique_slug
 # local imports
 from ..authentication.models import User
 
-
 # Create your models here.
 
+from django.db.models.signals import pre_save
+
+"""
+    Articles
+"""
+
+
+# Create your models here.
 class Article(models.Model):
     slug = models.SlugField(unique=True, max_length=253, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -15,7 +22,8 @@ class Article(models.Model):
     description = models.CharField(max_length=230, blank=False)
     body = models.TextField(blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateField(auto_now=True)
+    average_rating = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.title)
@@ -27,3 +35,4 @@ class Article(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+

@@ -30,5 +30,6 @@ urlpatterns = [
                                   namespace='profiles')),
     path('api/articles/', include('authors.apps.articles.urls',
                                   namespace='articles')),
-    path('', schema_view)
+    path('api/', include('authors.apps.ratings.urls', namespace='ratings')),
+    path('', schema_view),
 ]

@@ -12,5 +12,5 @@ class ArticleJSONRenderer(JSONRenderer):
                 'articles': data
             })
         return json.dumps({
-            'article': data
-        })
+            'article': data})
+

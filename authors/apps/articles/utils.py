@@ -1,4 +1,3 @@
-
 from django.utils.text import slugify
 
 
@@ -16,4 +15,3 @@ def get_unique_slug(model_instance, slugable_field_name, slug_field_name):
         extension += 1
 
     return unique_slug
-
