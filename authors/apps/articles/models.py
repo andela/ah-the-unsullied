@@ -1,9 +1,16 @@
 from django.db import models
 from .utils import get_unique_slug
+from django.db.models.signals import pre_save
+from django.db import models
+from cloudinary.models import CloudinaryField
+from .utils import get_unique_slug
+
 # local imports
 from ..authentication.models import User
-from django.db.models.signals import pre_save
 
+"""
+    Articles
+"""
 
 
 # Create your models here.
@@ -20,6 +27,7 @@ class Article(models.Model):
 
     def __str__(self):
         return str(self.title)
+
 
 class Comments(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -43,6 +51,3 @@ class Comments(models.Model):
 def slug_pre_save_receiver(sender, instance, *args, **kwargs):
     if not instance.slug:
         instance.slug = get_unique_slug(instance, 'title', 'slug')
-
-
-pre_save.connect(slug_pre_save_receiver, sender=Article)

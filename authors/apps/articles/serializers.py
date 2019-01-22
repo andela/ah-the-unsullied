@@ -6,7 +6,6 @@ from authors.apps.profiles.serializers import ProfileSerialiazer
 
 
 class ArticleSerializer(serializers.ModelSerializer):
-
     author = serializers.SerializerMethodField()
     body = serializers.CharField(required=True)
     title = serializers.CharField(required=True)
@@ -52,8 +51,8 @@ class UpdateArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
 
-    def get_author(self, article):
-        author = ProfileSerialiazer(article.author.profiles)
+    def get_author(self, obj):
+        author = ProfileSerialiazer(obj.author.profiles)
         return author.data
 
     class Meta:
