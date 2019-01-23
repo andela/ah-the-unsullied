@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Article, Comments
 from authors.apps.profiles.models import UserProfile
+from .models import Article, LikeDislike
 from authors.apps.profiles.serializers import ProfileSerialiazer
 
 
@@ -51,8 +52,8 @@ class UpdateArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
 
-    def get_author(self, obj):
-        author = ProfileSerialiazer(obj.author.profiles)
+    def get_author(self, article):
+        author = ProfileSerialiazer(article.author.profiles)
         return author.data
 
     class Meta:
@@ -120,3 +121,9 @@ class CommentSerializer(serializers.ModelSerializer):
             'article',
             'parent',
         )
+
+
+class LikeDislikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LikeDislike

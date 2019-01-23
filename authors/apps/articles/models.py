@@ -1,19 +1,53 @@
+from django.contrib.contenttypes.fields import GenericRelation, \
+    GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from .utils import get_unique_slug
 from django.db.models.signals import pre_save
-from django.db import models
-from cloudinary.models import CloudinaryField
-from .utils import get_unique_slug
 
 # local imports
 from ..authentication.models import User
-
 """
     Articles
 """
 
 
-# Create your models here.
+class LikeDislikeManager(models.Manager):
+    """This is model manager for likes and dislikes data"""
+
+    def likes(self):
+        """
+        get all the likes for an object
+        """
+        return self.get_queryset().filter(vote=True)
+
+    def dislikes(self):
+        """
+        get all the dislikes for an object
+        """
+        return self.get_queryset().filter(vote=False)
+
+
+class LikeDislike(models.Model):
+    """This class defines data for the likes and dislikes."""
+
+    LIKE = True
+    DISLIKE = False
+
+    VOTES = (
+        (DISLIKE, 'Dislike'),
+        (LIKE, 'Like')
+    )
+
+    vote = models.BooleanField(verbose_name='vote', choices=VOTES)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
+
+    objects = LikeDislikeManager()
+
+
 class Article(models.Model):
     slug = models.SlugField(max_length=253, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -22,8 +56,8 @@ class Article(models.Model):
     description = models.CharField(max_length=230, blank=False)
     body = models.TextField(blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
+    updated_at = models.DateField(auto_now=True)
+    votes = GenericRelation(LikeDislike, related_query_name='articles')
 
     def __str__(self):
         return str(self.title)
@@ -51,3 +85,6 @@ class Comments(models.Model):
 def slug_pre_save_receiver(sender, instance, *args, **kwargs):
     if not instance.slug:
         instance.slug = get_unique_slug(instance, 'title', 'slug')
+
+
+pre_save.connect(slug_pre_save_receiver, sender=Article)
