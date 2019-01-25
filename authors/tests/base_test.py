@@ -19,6 +19,7 @@ class TestBase(APITestCase):
         """This method is used to initialize variables used by the tests."""
 
         self.client = APIClient()
+        self.unauthenticated_client = APIClient()
         self.login_url = reverse('authentication:login_url')
         self.user_url = reverse('authentication:signup_url')
         self.update_url = reverse('authentication:user_update')
@@ -170,17 +171,18 @@ class TestBase(APITestCase):
         }
 
         self.invalid_token = {
-            "provider":"google-oauth2",
+            "provider": "google-oauth2",
             "access_token": "tjdjdj"
         }
 
         self.invalid_provider = {
-            "provider":"guth2",
+            "provider": "guth2",
             "access_token": "tjdjdj",
         }
 
         self.no_backend = {
         }
+
 
         self.new_article = {
             'title': 'test',
@@ -188,6 +190,54 @@ class TestBase(APITestCase):
 
             'body': 'best tests are done at night'
         }
+        self.user_data = {
+            "user": {
+                "username": "sam",
+                "email": "sam@gmail.com",
+                "password": "A23DVFRss@"
+            }
+        }
+        self.user_data2 = {
+            "user": {
+                "username": "catherine",
+                "email": "catherine@gmail.com",
+                "password": "A23DVFRss@"
+            }
+        }
+        self.user_data3 = {
+            "user": {
+                "username": "job",
+                "email": "job@gmail.com",
+                "password": "A23DVFRss@"
+            }
+        }
+        self.update_data = {
+            "user": {
+                "bio": "catherine"
+            }
+        }
+        self.rating = {
+            "rating": "3"
+        }
+        self.another_rating = {
+            "rating": "4"
+        }
+        self.wrong_rating = {
+            "rating": "9"
+        }
+        self.non_user_token = 'Bearer Token'
+
+    def get_token_on_signup(self, ):
+        return self.client.post(
+            reverse('authentication:signup_url'),
+            data=json.dumps(self.user_data),
+            content_type='application/json'
+        )
+
+    def authentication_token(self, ):
+        res = self.get_token_on_signup()
+        token = res.data['token']
+        return token
 
     def get_token(self):
         """Register and login a user"""
@@ -340,6 +390,13 @@ class TestBase(APITestCase):
             content_type='application/json'
         )
 
+    def get_token_signup_user_3(self):
+        return self.client.post(
+            reverse('authentication:signup_url'),
+            data=json.dumps(self.user_data3),
+            content_type='application/json'
+        )
+
     def authentication_token_2(self, ):
         res = self.get_token_signup_different_user()
         token = res.data['token']
@@ -349,3 +406,8 @@ class TestBase(APITestCase):
         token = self.authentication_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         self.client.get(self.get_verify_url(self.user_data))
+
+    def authentication_token_3(self, ):
+        res = self.get_token_signup_user_3()
+        token = res.data['token']
+        return token
