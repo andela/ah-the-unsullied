@@ -5,9 +5,7 @@ from rest_framework.utils.serializer_helpers import ReturnList
 
 class ArticleJSONRenderer(JSONRenderer):
     charset = 'utf-8'
-
     def render(self, data, media_type=None, renderer_context=None):
-
         if isinstance(data, ReturnList):
             return json.dumps({
                 'articles': data,
@@ -15,4 +13,14 @@ class ArticleJSONRenderer(JSONRenderer):
             })
         return json.dumps({
             'article': data
+        })
+
+
+class CommentJSONRenderer(JSONRenderer):
+    charset = 'utf-8'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        return json.dumps({
+            'comment': data,
+            'commentsCount': len(data)
         })
