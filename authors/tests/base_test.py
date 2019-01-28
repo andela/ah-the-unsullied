@@ -1,4 +1,5 @@
 # django imports
+import json
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -21,6 +22,7 @@ class TestBase(APITestCase):
         self.login_url = reverse('authentication:login_url')
         self.user_url = reverse('authentication:signup_url')
         self.update_url = reverse('authentication:user_update')
+        self.article_url = reverse('articles:article_create')
 
         self.user_data = {
             "user": {
@@ -54,6 +56,7 @@ class TestBase(APITestCase):
                 "email": "",
                 "password": "A23DVFRss@"
             }}
+
         self.blank_mail = {
             "email": ""
         }
@@ -111,7 +114,43 @@ class TestBase(APITestCase):
         self.reset_password_invalid_email = {
             "email": "kenyamoja@gmail.com"
         }
-        
+
+        self.valid_article_data = {
+            "article": {
+                "title": "another post",
+                "description": "a fitting description",
+                "body": "a body field"
+            }
+        }
+
+        self.invalid_article_data = {
+            "article": {
+                "title": "another post",
+                "description": "a fitting description"
+            }
+        }
+
+        self.null_article_data = {
+            "article": {
+
+            }
+        }
+
+        self.different_user_data = {
+            "user": {
+                "username": "nesh",
+                "email": "nesh@gmail.com",
+                "password": "A23DVFRss@"
+            }}
+
+        self.user_data2 = {
+            "user": {
+                "username": "abdi",
+                "email": "abdi@gmail.com",
+                "password": "A23DVFRss@"
+            }
+        }
+
     def get_token(self):
         """Register and login a user"""
 
@@ -129,9 +168,8 @@ class TestBase(APITestCase):
         )
         token = response.data['token']
         return token
-        
-    def get_verify_url(self, user):
 
+    def get_verify_url(self, user):
         self.register_user()
         user_to_activate = User.objects.get(username=user['user']['username'])
         pk = urlsafe_base64_encode(force_bytes(user_to_activate.id)).decode()
@@ -196,9 +234,50 @@ class TestBase(APITestCase):
             format="json"
         )
 
+    def dynamic_register_user(self, data):
+        return self.client.post(
+            self.user_url,
+            data,
+            format='json'
+        )
+
     def login_empty_email(self, ):
         return self.client.post(
             self.login_url,
             self.test_empty_email,
             format="json"
         )
+
+    def get_token_on_signup(self, ):
+        return self.client.post(
+            reverse('authentication:signup_url'),
+            data=json.dumps(self.user_data),
+            content_type='application/json'
+        )
+
+    def authentication_token(self, ):
+        res = self.get_token_on_signup()
+        token = res.data['token']
+        return token
+
+    def create_article(self, ):
+        token = self.authentication_token()
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        self.client.get(self.get_verify_url(self.user_data))
+        self.client.post(
+            self.article_url,
+            data=json.dumps(self.valid_article_data),
+            content_type='application/json'
+        )
+
+    def get_token_signup_different_user(self):
+        return self.client.post(
+            reverse('authentication:signup_url'),
+            data=json.dumps(self.user_data2),
+            content_type='application/json'
+        )
+
+    def authentication_token_2(self, ):
+        res = self.get_token_signup_different_user()
+        token = res.data['token']
+        return token
