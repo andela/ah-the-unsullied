@@ -103,7 +103,8 @@ class RateArticleTestCase(TestBase):
         response = self.client.get(self.article_url.format('another-post'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            3.5, json.loads(response.content)['articles'][0]['rating']
+            3.5, json.loads(response.content)[
+                'articles']['results'][0]['rating']
         )
 
     def test_update_rating(self):
@@ -169,9 +170,9 @@ class RateArticleTestCase(TestBase):
         # get the article
         response = self.client.get(self.article_url.format('another-post'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json.loads(response.content)['articles'][0]['rating'],
-                         0
-                         )
+        self.assertEqual(
+            json.loads(response.content)['articles']['results'][0]['rating'], 0
+        )
 
     def test_get_ratings_unauthenticated_user(self):
         """

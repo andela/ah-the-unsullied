@@ -1,5 +1,6 @@
 from rest_framework.generics import (
-    RetrieveUpdateDestroyAPIView, ListCreateAPIView
+    RetrieveUpdateDestroyAPIView, ListCreateAPIView,
+    ListAPIView
 )
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -12,12 +13,21 @@ from django.contrib.contenttypes.models import ContentType
 # local imports
 from authors.apps.articles.models import Article, LikeDislike
 from authors.apps.articles.serializers import (
-    ArticleSerializer, UpdateArticleSerializer, LikeDislikeSerializer
+    ArticleSerializer, UpdateArticleSerializer,
+    LikeDislikeSerializer, CustomTagSerializer,
+    UpdateArticleSerializer,
 )
 
-from authors.apps.articles.renderers import ArticleJSONRenderer, LikeArticleJSONRenderer
+from authors.apps.articles.renderers import (
+    ArticleJSONRenderer, LikeArticleJSONRenderer,
+    TagJSONRenderer
+)
+
 from authors.apps.articles.response_messages import (error_messages,
                                                      success_messages)
+from authors.apps.core.pagination import CustomPagination
+from rest_framework import mixins
+from taggit.models import Tag
 
 
 class CreateArticleView(ListCreateAPIView):
@@ -29,11 +39,7 @@ class CreateArticleView(ListCreateAPIView):
     serializer_class = ArticleSerializer
     renderer_classes = (ArticleJSONRenderer,)
     queryset = Article.objects.all()
-
-    def list(self, request, *args, **kwargs):
-        queryset = Article.objects.all()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
+    pagination_class = CustomPagination
 
     def post(self, request, *args, **kwargs):
         article = request.data.get('article', {})
@@ -109,7 +115,7 @@ class GetUpdateDeleteArticle(RetrieveUpdateDestroyAPIView):
 
         if serializer.is_valid(raise_exception=True):
             serializer.save(author=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -178,3 +184,12 @@ class LikeDislikeArticleView(ListCreateAPIView):
                 content_type="application/json",
                 status=status.HTTP_200_OK
             )
+
+
+class TagView(ListAPIView):
+    """List all tags"""
+
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    renderer_classes = (TagJSONRenderer,)
+    serializer_class = CustomTagSerializer
+    queryset = Tag.objects.all()

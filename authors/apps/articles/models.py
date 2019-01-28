@@ -4,9 +4,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.signals import pre_save
 
-from .utils import get_unique_slug
+# Third party imports
+from taggit.managers import TaggableManager
+
 # local imports
 from ..authentication.models import User
+from .utils import get_unique_slug
 
 """
     Articles
@@ -56,6 +59,7 @@ class Article(models.Model):
     title = models.CharField(max_length=100, blank=False)
     description = models.CharField(max_length=230, blank=False)
     body = models.TextField(blank=False)
+    tagList = TaggableManager()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     votes = GenericRelation(LikeDislike, related_query_name='articles')

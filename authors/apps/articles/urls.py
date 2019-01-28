@@ -4,11 +4,13 @@ from authors.apps.articles.models import LikeDislike
 from authors.apps.articles.views.comments import (
     CommentsListView, CommentsRetrieveUpdateDestroy
 )
+
 from authors.apps.articles.views.articles import (GetUpdateDeleteArticle,
                                                   CreateArticleView,
                                                   LikeDislikeArticleView)
 from authors.apps.articles.views.favorite import FavouriteArticle, \
     GetFavouriteArticles
+
 
 """
 Django 2.0 requires the app_name variable set when using include namespace
