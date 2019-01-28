@@ -7,6 +7,13 @@ python:
 services:
   - postgresql
 
+addons:
+  postgresql: '9.4'
+  apt:
+    packages:
+      - postgresql-server-dev-9.4
+
+
 env:
   - DJANGO_SETTINGS_MODULE="authors.settings"
 # Install dependencies
@@ -18,7 +25,6 @@ before_script:
 
 # Run tests
 script:
-  - python manage.py makemigrations
   - python manage.py migrate
   - pytest --cov-report term-missing --cov=authors/apps -p no:warnings
   - coverage report

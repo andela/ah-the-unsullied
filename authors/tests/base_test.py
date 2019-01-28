@@ -23,6 +23,7 @@ class TestBase(APITestCase):
         self.user_url = reverse('authentication:signup_url')
         self.update_url = reverse('authentication:user_update')
         self.article_url = reverse('articles:article_create')
+        self.social_auth_url = reverse('authentication:social_auth')
 
         self.user_data = {
             "user": {
@@ -151,9 +152,28 @@ class TestBase(APITestCase):
             }
         }
 
+        self.invalid_payload = {
+            "access_token": "tjdjdj",
+            "access_token_secret": "dgdgdg"
+        }
+        self.no_token = {
+            "access_token_secret": "dgdgdg"
+        }
+        self.no_key = {
+            "access_token": "tjdjdj"
+        }
+        self.invalid_token = {
+            "provider":"google-oauth2",
+            "access_token": "tjdjdj"
+        }
+        self.invalid_provider = {
+            "provider":"guth2",
+            "access_token": "tjdjdj",
+        }
+        self.no_backend = {
+        }
     def get_token(self):
         """Register and login a user"""
-
         # register user
         self.client.post(
             self.user_url,

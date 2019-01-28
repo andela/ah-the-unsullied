@@ -14,15 +14,18 @@ from rest_framework.generics import (
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from social_django.utils import load_strategy, load_backend
+from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
+from social_core.exceptions import MissingBackend
 
 from .activate import account_activation_token
 from .models import User
 from .renderers import UserJSONRenderer
-# Local imports
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
-    EmailCheckSerializer, PasswordResetSerializer, ActivateSerializer
+    EmailCheckSerializer, PasswordResetSerializer, ActivateSerializer,
 )
+from .backends import get_jwt_token
 
 
 class RegistrationAPIView(CreateAPIView):
@@ -240,3 +243,37 @@ class PasswordDone(UpdateAPIView):
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "Password successfully updated"},
                         status=status.HTTP_200_OK)
+
+
+class SocialAuth(CreateAPIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+
+    def create(self, request, *args, **kwargs):
+        provider = request.data['provider']
+        strategy = load_strategy(request)
+        if 'access_token_secret' in request.data:
+            token = {
+                'oauth_token': request.data['access_token'],
+                'oauth_token_secret': request.data['access_token_secret']
+            }
+        else:
+            token = request.data.get('access_token')
+        try:
+            backend = load_backend(
+                strategy=strategy,
+                name=provider,
+                redirect_uri=None
+            )
+        except MissingBackend:
+            message = {"error": "Please enter a valid provider."}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = backend.do_auth(token)
+        except BaseException:
+            return Response({"error": "Invalid token."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserSerializer(user)
+        serializer_data = serializer.data
+        serializer_data["token"] = get_jwt_token(user)
+        return Response(serializer_data, status=status.HTTP_200_OK)
