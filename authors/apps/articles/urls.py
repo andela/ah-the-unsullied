@@ -1,16 +1,17 @@
 from django.urls import path
+
 from authors.apps.articles.models import LikeDislike
-from authors.apps.articles.views.comments import (
-    CommentsListView, CommentsRetrieveUpdateDestroy, CommentHistoryListView)
-from authors.apps.articles.views.bookmark import (BookmarkArticle,
-                                                  GetBookmarkedArticles)
-from authors.apps.articles.views.favorite import (FavouriteArticle,
-                                                  GetFavouriteArticles)
 from authors.apps.articles.views.articles import (GetUpdateDeleteArticle,
                                                   CreateArticleView,
-                                                  SearchFilter,
                                                   LikeDislikeArticleView)
-
+from authors.apps.articles.views.bookmark import (BookmarkArticle,
+                                                  GetBookmarkedArticles)
+from authors.apps.articles.views.comments import (
+    CommentsListView, CommentsRetrieveUpdateDestroy, CommentHistoryListView,
+    LikeDislikeCommentsView
+)
+from authors.apps.articles.views.favorite import (FavouriteArticle,
+                                                  GetFavouriteArticles)
 
 """
 Django 2.0 requires the app_name variable set when using include namespace
@@ -44,4 +45,13 @@ urlpatterns = [
     path('/<slug>/comments/<comment_id>/history',
          CommentHistoryListView.as_view(),
          name='comment-history'),
+
+    path('/<slug>/comments/<int:comment_id>/like',
+         LikeDislikeCommentsView.as_view(vote_type=LikeDislike.LIKE),
+         name='like-comment'
+         ),
+    path('/<slug>/comments/<int:comment_id>/dislike',
+         LikeDislikeCommentsView.as_view(vote_type=LikeDislike.DISLIKE),
+         name='dislike-comment'
+         )
 ]

@@ -41,7 +41,7 @@ class LikeArticleJSONRenderer(JSONRenderer):
 
     def render(self, data, media_type=None, renderer_context=None):
         return json.dumps({
-            'likes_dislikes': data
+            'likes_dislikes_count': data
         })
 
 
@@ -49,11 +49,11 @@ class TagJSONRenderer(JSONRenderer):
     charset = 'utf-8'
 
     def render(self, data, media_type=None, renderer_context=None):
-    
         tags = len(data)
         if tags > 0:
-            return json.dumps({ 
-                'tags': reduce(operator.concat,[list(i.values()) for i in data['results']])
+            return json.dumps({
+                'tags': reduce(operator.concat, [list(i.values()) for i in
+                                                 data['results']])
             })
         return json.dumps({
             'tag': list(data['results'][0].values()),

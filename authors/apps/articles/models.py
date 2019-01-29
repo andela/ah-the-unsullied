@@ -81,6 +81,7 @@ class Comments(models.Model):
                                on_delete=models.CASCADE,
                                related_name='threads')
     history = HistoricalRecords()
+    votes = GenericRelation(LikeDislike, related_query_name='comments')
 
     def __str__(self):
         return str(self.body)
