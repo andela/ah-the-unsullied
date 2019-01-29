@@ -1,7 +1,9 @@
 import re
+import os
+from urllib.parse import quote
 from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView, ListCreateAPIView,
-    ListAPIView,
+    ListAPIView,CreateAPIView
 )
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -19,17 +21,22 @@ from taggit.models import Tag
 from authors.apps.articles.models import Article, LikeDislike
 from authors.apps.articles.serializers import (
     ArticleSerializer, UpdateArticleSerializer,
-    LikeDislikeSerializer, CustomTagSerializer,
-    UpdateArticleSerializer,
-)
+    LikeDislikeSerializer, CustomTagSerializer
+    )
+from authors.apps.authentication.serializers import EmailCheckSerializer
 from authors.apps.articles.renderers import (
     ArticleJSONRenderer,
     LikeArticleJSONRenderer,
     TagJSONRenderer
-)
+    )
 from authors.apps.articles.response_messages import (error_messages,
                                                      success_messages)
 from authors.apps.core.pagination import CustomPagination
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from authors.apps.profiles.views import UserProfile
+from authors.apps.profiles.serializers import ProfileSerialiazer
+base_url = os.getenv('BASE_URL')
 
 
 class CreateArticleView(ListCreateAPIView):
@@ -58,7 +65,7 @@ class CreateArticleView(ListCreateAPIView):
 
 
 class GetUpdateDeleteArticle(RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (ArticleJSONRenderer,)
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
@@ -254,3 +261,73 @@ class CustomSearchFilter(ListAPIView):
             'data': request.query_params
         }
         return kwargs
+
+
+class ShareArticleViaEmail(CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = EmailCheckSerializer
+
+    def post(self, request, *args, **kwargs):
+        try:
+            article = Article.objects.get(slug=kwargs['slug'])
+        except Article.DoesNotExist:
+            return Response(error_messages['article_404'],
+                            status=status.HTTP_404_NOT_FOUND)
+        author = UserProfile.objects.get(user__username=request.user.username)
+        author_data = ProfileSerialiazer(author)
+        author_image = author_data.data['image']
+        hosting = request.get_host()
+        username = request.user.username
+        email_to = request.data.get('email', {})
+        article_link = 'https://' + hosting + '/api/articles/'+kwargs['slug']
+        email_subject = username + ' has shared an article with you:' + article.title
+        prev_body = article.body[0:300]
+        message = render_to_string(
+            'share_article.html', {
+                'title': article.title,
+                'username': username,
+                'link': article_link,
+                'body': prev_body,
+                'author': article.author,
+                'author_image': author_image,
+            })
+        send_mail(email_subject, email_subject, '', [email_to, ],
+                  html_message=message,
+                  fail_silently=False)
+        message = "Article successfully shared"
+        return Response(message, status.HTTP_200_OK)
+
+
+class ShareArticleViaFacebook(CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            Article.objects.get(slug=kwargs['slug'])
+        except Article.DoesNotExist:
+            return Response(error_messages['article_404'],
+                            status=status.HTTP_404_NOT_FOUND)
+        slug = kwargs['slug']
+        facebook_url = "https://www.facebook.com/sharer/sharer.php?u="
+        article_link = "{}api/articles/{}".format(base_url, slug)
+        url_link = facebook_url + article_link
+        shared_post_url = {'link': url_link}
+        return Response(shared_post_url, status.HTTP_200_OK)
+
+
+class ShareArticleViaTwitter(CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            Article.objects.get(slug=kwargs['slug'])
+        except Article.DoesNotExist:
+            return Response(error_messages['article_404'],
+                            status=status.HTTP_404_NOT_FOUND)
+        slug = kwargs['slug']
+        info = quote('The unsullied have shared ')
+        twitter_url = "https://twitter.com/home?status="
+        article_link = "{}{}api/articles/{}".format(info, base_url, slug)
+        url_link = twitter_url + article_link
+        shared_post_url = {'link': url_link}
+        return Response(shared_post_url, status=status.HTTP_200_OK)
