@@ -115,6 +115,28 @@ class TestBase(APITestCase):
         self.reset_password_invalid_email = {
             "email": "kenyamoja@gmail.com"
         }
+        self.new_article = {
+            'title': 'test',
+            'description': 'learn TDD',
+            'body': 'best tests are done at night'
+        }
+        self.comment_data = {
+            'body': 'poseidon'
+        }
+
+        self.update_comment_data = {
+            'body': 'poseidon'
+        }
+
+        self.thread_data = {
+            "comment": {
+                'body': 'poseidon'}
+        }
+
+        self.update_child_data = {
+            "comment": {
+                'body': 'theus'}
+        }
 
         self.valid_article_data = {
             "article": {
@@ -152,26 +174,19 @@ class TestBase(APITestCase):
             }
         }
 
-        self.invalid_payload = {
-            "access_token": "tjdjdj",
-            "access_token_secret": "dgdgdg"
-        }
-        self.no_token = {
-            "access_token_secret": "dgdgdg"
-        }
-        self.no_key = {
-            "access_token": "tjdjdj"
-        }
         self.invalid_token = {
             "provider":"google-oauth2",
             "access_token": "tjdjdj"
         }
+
         self.invalid_provider = {
             "provider":"guth2",
             "access_token": "tjdjdj",
         }
+
         self.no_backend = {
         }
+
     def get_token(self):
         """Register and login a user"""
         # register user
@@ -268,6 +283,31 @@ class TestBase(APITestCase):
             format="json"
         )
 
+    def get_comment_url(self):
+        slug = self.create_article().data['slug']
+        url = reverse("articles:comment", kwargs={"slug": slug})
+        return url
+
+    def get_child_comment_url(self):
+        slug = self.create_article().data['slug']
+        comment_url = reverse("articles:comment", kwargs={"slug": slug})
+        response = self.client.post(
+            comment_url, self.comment_data, format="json")
+        id = response.data['id']
+        url = reverse("articles:thread", kwargs={"slug": slug, "id": id})
+        return url
+
+    def get_nonexistant_child_comment_url(self):
+        slug = self.create_article().data['slug']
+        url = reverse("articles:thread", kwargs={"slug": slug, "id": 3})
+        return url
+
+    def comment_on_nonexistant_comment(self):
+        comment_url = self.get_nonexistant_child_comment_url()
+        response = self.client.post(
+            comment_url, self.comment_data, format="json")
+        return response
+
     def get_token_on_signup(self, ):
         return self.client.post(
             reverse('authentication:signup_url'),
@@ -284,7 +324,7 @@ class TestBase(APITestCase):
         token = self.authentication_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         self.client.get(self.get_verify_url(self.user_data))
-        self.client.post(
+        return self.client.post(
             self.article_url,
             data=json.dumps(self.valid_article_data),
             content_type='application/json'
@@ -301,3 +341,8 @@ class TestBase(APITestCase):
         res = self.get_token_signup_different_user()
         token = res.data['token']
         return token
+
+    def verify_user(self):
+        token = self.authentication_token()
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        self.client.get(self.get_verify_url(self.user_data))

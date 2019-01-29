@@ -1,9 +1,9 @@
-
 from django.db import models
 from .utils import get_unique_slug
 # local imports
-from django.db.models.signals import pre_save
 from ..authentication.models import User
+from django.db.models.signals import pre_save
+
 
 
 # Create your models here.
@@ -17,8 +17,24 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
     def __str__(self):
         return str(self.title)
+
+class Comments(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+    body = models.TextField(max_length=200)
+    is_Child = models.BooleanField(default=False)
+    author = models.ForeignKey(User, related_name='author_rel',
+                               on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, related_name='comments',
+                                on_delete=models.CASCADE, null=False)
+    parent = models.ForeignKey('self', null=True, blank=True,
+                               on_delete=models.CASCADE, related_name='threads')
+
+    def __str__(self):
+        return str(self.body)
 
     class Meta:
         ordering = ['-created_at']

@@ -248,6 +248,7 @@ class PasswordDone(UpdateAPIView):
 class SocialAuth(CreateAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
+    serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
         provider = request.data['provider']
