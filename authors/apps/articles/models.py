@@ -2,11 +2,14 @@ from django.contrib.contenttypes.fields import GenericRelation, \
     GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.signals import pre_save
+
 from .utils import get_unique_slug
 from django.db.models.signals import pre_save
 
 # local imports
 from ..authentication.models import User
+
 """
     Articles
 """
@@ -73,7 +76,8 @@ class Comments(models.Model):
     article = models.ForeignKey(Article, related_name='comments',
                                 on_delete=models.CASCADE, null=False)
     parent = models.ForeignKey('self', null=True, blank=True,
-                               on_delete=models.CASCADE, related_name='threads')
+                               on_delete=models.CASCADE,
+                               related_name='threads')
 
     def __str__(self):
         return str(self.body)
@@ -88,3 +92,13 @@ def slug_pre_save_receiver(sender, instance, *args, **kwargs):
 
 
 pre_save.connect(slug_pre_save_receiver, sender=Article)
+
+
+class FavoriteArticle(models.Model):
+    """Favorite Article model"""
+
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "{}".format(self.article)

@@ -19,4 +19,3 @@ class TestPagination(TestBase):
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertIn('next_page', response.data['pages'])
         self.assertIn('previous_page', response.data['pages'])
-        
