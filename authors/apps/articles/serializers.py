@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from .models import Article, Comments, LikeDislike
 from authors.apps.profiles.models import UserProfile
-from authors.apps.articles.models import FavoriteArticle
 from taggit_serializer.serializers import (
     TagListSerializerField,
     TaggitSerializer
 )
+from authors.apps.articles.models import FavoriteArticle, BookmarkArticleModel
 from authors.apps.profiles.serializers import ProfileSerialiazer
 from ..utils import get_article_rating
 from taggit.models import Tag
@@ -126,6 +126,7 @@ class LikeDislikeSerializer(serializers.ModelSerializer):
 
 
 class FavouriteSerializer(serializers.ModelSerializer):
+    """This serializer is used to favourite an article"""
     author = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     slug = serializers.SerializerMethodField()
@@ -154,3 +155,26 @@ class CustomTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('name',)
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    """This serializer is used for  bookmarking article"""
+    author_name = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
+
+    def get_author_name(self, bookmark):
+        author = bookmark.article_id.author.username
+        return author
+
+    def get_title(self, bookmark):
+        title = bookmark.article_id.title
+        return title
+
+    def get_slug(self, bookmark):
+        slug = bookmark.article_id.slug
+        return slug
+
+    class Meta:
+        model = BookmarkArticleModel
+        fields = ('title', 'slug', 'author_name', 'user_id', 'article_id')

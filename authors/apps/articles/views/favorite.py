@@ -5,7 +5,6 @@ from rest_framework.generics import (ListCreateAPIView,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from authors.apps.articles.models import Article, FavoriteArticle
 from authors.apps.articles.renderers import ArticleJSONRenderer
 from authors.apps.articles.response_messages import (success_messages,
@@ -15,7 +14,6 @@ from authors.apps.articles.serializers import (FavouriteSerializer,
                                                ArticleSerializer)
 
 
-# Create your views here.
 class CreateArticleView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ArticleSerializer
@@ -31,12 +29,10 @@ class FavouriteArticle(RetrieveUpdateDestroyAPIView):
     serializer_class = FavouriteSerializer
 
     def put(self, request, *args, **kwargs):
-
         article = Article.objects.filter(slug=kwargs['slug']).first()
         if not article:
             msg = {"message": error_messages['article_404']}
             return Response(msg, status.HTTP_404_NOT_FOUND)
-
         favorite_article = FavoriteArticle.objects.filter(
             user=request.user.id, article=article.id).exists()
 

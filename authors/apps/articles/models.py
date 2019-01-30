@@ -113,3 +113,12 @@ class Rating(models.Model):
     rating = models.FloatField(null=False, default=0)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class BookmarkArticleModel(models.Model):
+    """Bookmark Article model"""
+    article_id = models.ForeignKey(Article, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "{}".format(self.article)
