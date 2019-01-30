@@ -19,3 +19,4 @@ django-rest-framework-social-oauth2==1.1.0
 django-autoslug==1.9.3
 django-taggit==0.23.0
 django-taggit-serializer==0.1.7
+django-simple-history==2.7.0

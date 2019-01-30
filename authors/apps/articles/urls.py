@@ -1,7 +1,7 @@
 from django.urls import path
 from authors.apps.articles.models import LikeDislike
 from authors.apps.articles.views.comments import (
-    CommentsListView, CommentsRetrieveUpdateDestroy)
+    CommentsListView, CommentsRetrieveUpdateDestroy, CommentHistoryListView)
 from authors.apps.articles.views.bookmark import (BookmarkArticle,
                                                   GetBookmarkedArticles)
 from authors.apps.articles.views.favorite import (FavouriteArticle,
@@ -40,4 +40,7 @@ urlpatterns = [
          name='bookmark_article'),
     path('/bookmark/', GetBookmarkedArticles.as_view(),
          name='bookmarked_articles'),
+    path('/<slug>/comments/<comment_id>/history',
+         CommentHistoryListView.as_view(),
+         name='comment-history'),
 ]

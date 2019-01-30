@@ -3,7 +3,7 @@ from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateDestroyAPIView,
     CreateAPIView
 )
-from rest_framework.permissions import (IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -11,8 +11,12 @@ from rest_framework import status
 from authors.apps.articles.models import (
     Article, Comments
 )
-from authors.apps.articles.serializers import (CommentSerializer)
-from authors.apps.articles.renderers import (CommentJSONRenderer)
+from authors.apps.articles.serializers import (CommentSerializer,
+                                               CommentHistorySerializer)
+from authors.apps.articles.renderers import CommentJSONRenderer
+from authors.apps.articles.response_messages import error_messages
+
+# Create your views here.
 
 
 class CommentsListView(ListCreateAPIView):
@@ -40,7 +44,7 @@ class CommentsListView(ListCreateAPIView):
         if not article:
             message = {"error": "Article doesn't exist"}
             return Response(message, status.HTTP_404_NOT_FOUND)
-        comment = article.comments.filter(is_Child=False)
+        comment = article.comments.filter(parent=None)
         serializer = self.serializer_class(comment, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -73,7 +77,6 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView,
             'body': body,
             'parent': parent,
             'article': article.pk,
-            'is_Child': True
         }
 
         serializer = self.serializer_class(
@@ -130,3 +133,32 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView,
         message = {"message": "Comment deleted successfully"}
         return Response(
             message, status.HTTP_200_OK)
+
+
+class CommentHistoryListView(ListCreateAPIView):
+    """Retrieve comments history with comment id."""
+
+    serializer_class = CommentHistorySerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get(self, request, slug, comment_id):
+        """This is get for comment history"""
+        try:
+            comment_id = int(comment_id)
+        except ValueError:
+            message = {'detail': error_messages['non_int']}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        article = Article.objects.filter(slug=slug).first()
+        if not article:
+            message = {"detail": error_messages['article_404']}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+        comment = Comments.history.filter(id=comment_id)
+        if not comment:
+            message = {'detail': error_messages['comment_not_found']}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+        if comment.count() == 1:
+            message = []
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(comment, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
