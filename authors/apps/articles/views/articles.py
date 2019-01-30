@@ -1,6 +1,7 @@
+import re
 from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView, ListCreateAPIView,
-    ListAPIView
+    ListAPIView,
 )
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -9,6 +10,10 @@ from rest_framework.response import Response
 from rest_framework.views import status
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.permissions import AllowAny
+from django_filters import rest_framework as filters
+from rest_framework.filters import SearchFilter, OrderingFilter
+from taggit.models import Tag
 
 # local imports
 from authors.apps.articles.models import Article, LikeDislike
@@ -17,17 +22,14 @@ from authors.apps.articles.serializers import (
     LikeDislikeSerializer, CustomTagSerializer,
     UpdateArticleSerializer,
 )
-
 from authors.apps.articles.renderers import (
-    ArticleJSONRenderer, LikeArticleJSONRenderer,
+    ArticleJSONRenderer,
+    LikeArticleJSONRenderer,
     TagJSONRenderer
 )
-
 from authors.apps.articles.response_messages import (error_messages,
                                                      success_messages)
 from authors.apps.core.pagination import CustomPagination
-from rest_framework import mixins
-from taggit.models import Tag
 
 
 class CreateArticleView(ListCreateAPIView):
@@ -168,10 +170,10 @@ class LikeDislikeArticleView(ListCreateAPIView):
         return Response({
             "likes": article.votes.likes().count(),
             "dislikes": article.votes.dislikes().count(),
-                },
-                content_type="application/json",
-                status=status.HTTP_201_CREATED
-            )
+        },
+            content_type="application/json",
+            status=status.HTTP_201_CREATED
+        )
 
     def get(self, request, slug):
 
@@ -180,10 +182,10 @@ class LikeDislikeArticleView(ListCreateAPIView):
         return Response({
             "likes": article.votes.likes().count(),
             "dislikes": article.votes.dislikes().count(),
-                },
-                content_type="application/json",
-                status=status.HTTP_200_OK
-            )
+        },
+            content_type="application/json",
+            status=status.HTTP_200_OK
+        )
 
 
 class TagView(ListAPIView):
@@ -193,3 +195,62 @@ class TagView(ListAPIView):
     renderer_classes = (TagJSONRenderer,)
     serializer_class = CustomTagSerializer
     queryset = Tag.objects.all()
+
+
+class ArticleFilter(filters.FilterSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    author = filters.CharFilter(
+        field_name='author__username', lookup_expr='icontains')
+    title = filters.CharFilter(field_name='title', lookup_expr='icontains')
+    tag_list = filters.CharFilter(field_name='tag_list', method='get_tags')
+
+    def get_tags(self, queryset, name, value):
+
+        return queryset.filter(tag_list__name__icontains=value)
+
+    class Meta:
+        model = Article
+        fields = ['author', 'title', 'tag_list']
+
+
+class MyFilterBackend(filters.DjangoFilterBackend):
+    def get_filterset_kwargs(self, request, queryset, view):
+        kwargs = super().get_filterset_kwargs(request, queryset, view)
+
+        # merge filterset kwargs provided by view class
+        if hasattr(view, 'get_filterset_kwargs'):
+            kwargs.update(view.get_filterset_kwargs(request))
+
+        return kwargs
+
+
+class CustomSearchFilter(ListAPIView):
+    serializer_class = ArticleSerializer
+    permission_classes = (AllowAny,)
+    queryset = Article.objects.all()
+    filter_backends = (MyFilterBackend, SearchFilter, OrderingFilter)
+    filterset_class = ArticleFilter
+    search_fields = (
+        'tag_list__name',
+        'author__username',
+        'title', 'body',
+        'description'
+    )
+    ordering_fields = ('created_at', 'updated_at')
+
+    def get_filterset_kwargs(self, request):
+        title = request.GET.get('title', '')
+        author = request.GET.get('author', '')
+        tag_list = request.GET.get('tag_list', '')
+
+        if not request.GET._mutable:
+            request.GET._mutable = True
+        request.GET['title'] = re.sub("\s\s+", " ", title)
+        request.GET['author'] = re.sub("\s\s+", " ", author)
+        request.GET['tag_list'] = re.sub("\s\s+", " ", tag_list)
+        kwargs = {
+            'data': request.query_params
+        }
+        return kwargs
