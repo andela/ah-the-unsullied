@@ -53,6 +53,7 @@ class LikeDislike(models.Model):
     objects = LikeDislikeManager()
 
 
+# Create your models here.
 class Article(models.Model):
     slug = models.SlugField(max_length=253, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -64,6 +65,7 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     votes = GenericRelation(LikeDislike, related_query_name='articles')
+    read_time = models.TextField(default='null')
 
     def __str__(self):
         return str(self.title)
