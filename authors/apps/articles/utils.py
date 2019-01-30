@@ -4,7 +4,6 @@ from django.utils.text import slugify
 
 
 def get_unique_slug(model_instance, slugable_field_name, slug_field_name):
-
     slug = slugify(getattr(model_instance, slugable_field_name))
     unique_slug = slug
     extension = ''.join(random.choices(

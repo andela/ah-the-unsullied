@@ -22,9 +22,13 @@ class CommentJSONRenderer(JSONRenderer):
     charset = 'utf-8'
 
     def render(self, data, media_type=None, renderer_context=None):
+        if isinstance(data, ReturnList):
+            return json.dumps({
+                'comments': data,
+                'commentsCount': len(data)
+            })
         return json.dumps({
-            'comment': data,
-            'commentsCount': len(data)
+            'comment': data
         })
 
 

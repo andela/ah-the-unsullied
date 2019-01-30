@@ -19,7 +19,7 @@ from authors.apps.articles.serializers import (
 from authors.apps.articles.renderers import (
     ArticleJSONRenderer, CommentJSONRenderer
 )
-from authors.apps.articles.views import articles
+
 
 # Create your views here.
 class CommentsListView(ListCreateAPIView):
@@ -43,7 +43,6 @@ class CommentsListView(ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get(self, request, slug, *args, **kwargs):
-
         article = Article.objects.filter(slug=slug).first()
         if not article:
             message = {"error": "Article doesn't exist"}
@@ -81,7 +80,7 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView,
             'body': body,
             'parent': parent,
             'article': article.pk,
-            'is_Child':True
+            'is_Child': True
         }
 
         serializer = self.serializer_class(
