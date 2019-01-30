@@ -2,11 +2,11 @@ from rest_framework import serializers
 
 from .models import Article, Comments
 from authors.apps.profiles.models import UserProfile
+from .models import Article, LikeDislike
 from authors.apps.profiles.serializers import ProfileSerialiazer
 
 
 class ArticleSerializer(serializers.ModelSerializer):
-
     author = serializers.SerializerMethodField()
     body = serializers.CharField(required=True)
     title = serializers.CharField(required=True)
@@ -121,3 +121,9 @@ class CommentSerializer(serializers.ModelSerializer):
             'article',
             'parent',
         )
+
+
+class LikeDislikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LikeDislike

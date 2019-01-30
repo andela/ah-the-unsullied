@@ -6,14 +6,16 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 from rest_framework.views import status
+from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 
 # local imports
-from authors.apps.articles.models import Article
+from authors.apps.articles.models import Article, LikeDislike
 from authors.apps.articles.serializers import (
-    ArticleSerializer, UpdateArticleSerializer
+    ArticleSerializer, UpdateArticleSerializer, LikeDislikeSerializer
 )
 
-from authors.apps.articles.renderers import ArticleJSONRenderer
+from authors.apps.articles.renderers import ArticleJSONRenderer, LikeArticleJSONRenderer
 from authors.apps.articles.response_messages import (error_messages,
                                                      success_messages)
 
@@ -129,3 +131,50 @@ class GetUpdateDeleteArticle(RetrieveUpdateDestroyAPIView):
         article.delete()
         message = success_messages['deleted']
         return Response(message, status=status.HTTP_200_OK)
+
+
+class LikeDislikeArticleView(ListCreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = LikeDislikeSerializer
+    renderer_classes = (LikeArticleJSONRenderer,)
+    vote_type = None
+
+    def post(self, request, slug):
+        """""This method posts likes and dislikes"""
+
+        article = get_object_or_404(Article, slug=slug)
+
+        # message to display after like or dislike
+        try:
+            like_dislike = LikeDislike.objects.get(
+                content_type=ContentType.objects.get_for_model(article),
+                author=request.user,
+                object_id=article.id)
+            if like_dislike.vote is not self.vote_type:
+                like_dislike.vote = self.vote_type
+                like_dislike.save(update_fields=['vote'])
+            else:
+                like_dislike.delete()
+        except LikeDislike.DoesNotExist:
+            article.votes.create(author=request.user, vote=self.vote_type)
+            article.save()
+
+        return Response({
+            "likes": article.votes.likes().count(),
+            "dislikes": article.votes.dislikes().count(),
+                },
+                content_type="application/json",
+                status=status.HTTP_201_CREATED
+            )
+
+    def get(self, request, slug):
+
+        article = get_object_or_404(Article, slug=slug)
+
+        return Response({
+            "likes": article.votes.likes().count(),
+            "dislikes": article.votes.dislikes().count(),
+                },
+                content_type="application/json",
+                status=status.HTTP_200_OK
+            )

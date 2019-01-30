@@ -115,11 +115,6 @@ class TestBase(APITestCase):
         self.reset_password_invalid_email = {
             "email": "kenyamoja@gmail.com"
         }
-        self.new_article = {
-            'title': 'test',
-            'description': 'learn TDD',
-            'body': 'best tests are done at night'
-        }
         self.comment_data = {
             'body': 'poseidon'
         }
@@ -187,9 +182,16 @@ class TestBase(APITestCase):
         self.no_backend = {
         }
 
+        self.new_article = {
+            'title': 'test',
+            'description': 'learn TDD',
+
+            'body': 'best tests are done at night'
+        }
+
     def get_token(self):
         """Register and login a user"""
-        # register user
+
         self.client.post(
             self.user_url,
             self.user_data,
@@ -204,6 +206,7 @@ class TestBase(APITestCase):
         token = response.data['token']
         return token
 
+
     def get_verify_url(self, user):
         self.register_user()
         user_to_activate = User.objects.get(username=user['user']['username'])
@@ -213,7 +216,7 @@ class TestBase(APITestCase):
                                                          "token": token})
         return url
 
-    def register_user(self, ):
+    def register_user(self):
         return self.client.post(
             self.user_url,
             self.user_data,
@@ -255,7 +258,7 @@ class TestBase(APITestCase):
             format='json'
         )
 
-    def login_user(self, ):
+    def login_user(self):
         return self.client.post(
             self.login_url,
             self.login_data,
