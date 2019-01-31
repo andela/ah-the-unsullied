@@ -30,6 +30,7 @@ urlpatterns = [
                                   namespace='profiles')),
     path('api/articles', include('authors.apps.articles.urls',
                                  namespace='articles')),
-    path('', schema_view),
     path('auth/', include('rest_framework_social_oauth2.urls')),
+    path('api/', include('authors.apps.ratings.urls', namespace='ratings')),
+    path('', schema_view)
 ]

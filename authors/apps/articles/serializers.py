@@ -3,6 +3,7 @@ from .models import Article, Comments, LikeDislike
 from authors.apps.profiles.models import UserProfile
 from authors.apps.articles.models import FavoriteArticle
 from authors.apps.profiles.serializers import ProfileSerialiazer
+from ..utils import get_article_rating
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -10,16 +11,20 @@ class ArticleSerializer(serializers.ModelSerializer):
     body = serializers.CharField(required=True)
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
         return author.data
 
+    def get_rating(self, article):
+        return get_article_rating(article)
+
     class Meta:
         model = Article
 
         fields = ['slug', 'title', 'description', 'body', 'created_at',
-                  'updated_at', 'author']
+                  'updated_at', 'author', 'rating']
 
     def validate(self, data):
 
@@ -49,15 +54,19 @@ class UpdateArticleSerializer(serializers.ModelSerializer):
     body = serializers.CharField(required=True)
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
+    rating = serializers.SerializerMethodField()
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
         return author.data
 
+    def get_rating(self, article):
+        return get_article_rating(article)
+
     class Meta:
         model = Article
         fields = ['slug', 'title', 'description', 'body', 'created_at',
-                  'updated_at', 'author']
+                  'updated_at', 'author', 'rating']
 
 
 class CommentSerializer(serializers.ModelSerializer):

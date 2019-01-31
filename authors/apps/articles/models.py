@@ -5,8 +5,6 @@ from django.db import models
 from django.db.models.signals import pre_save
 
 from .utils import get_unique_slug
-from django.db.models.signals import pre_save
-
 # local imports
 from ..authentication.models import User
 
@@ -59,7 +57,7 @@ class Article(models.Model):
     description = models.CharField(max_length=230, blank=False)
     body = models.TextField(blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
     votes = GenericRelation(LikeDislike, related_query_name='articles')
 
     def __str__(self):
@@ -102,3 +100,12 @@ class FavoriteArticle(models.Model):
 
     def __str__(self):
         return "{}".format(self.article)
+
+
+class Rating(models.Model):
+    """
+    Rating model
+    """
+    rating = models.FloatField(null=False, default=0)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
