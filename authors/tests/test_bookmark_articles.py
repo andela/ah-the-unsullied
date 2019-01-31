@@ -1,4 +1,5 @@
 import jwt
+import json
 from django.conf import settings
 from rest_framework.views import status
 from django.urls import reverse
@@ -11,13 +12,14 @@ class TestBookmarkArticle(TestBase):
 
     def test_bookmark_article(self):
         """Test if user can bookmark an article"""
-        self.create_article()
-        res = self.login_user()
+        token = self.authentication_token()
+        response = self.create_bookmark_article(token)
+        slug = response.data['slug']
         response = self.client.post(
             reverse('articles:bookmark_article',
-                    kwargs={'slug': 'another-post'}
+                    kwargs={'slug': slug}
                     ), content_type='application/json',
-            HTTP_AUTHORIZATION='Bearer ' + res.data['token'])
+            HTTP_AUTHORIZATION='Bearer ' + token)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["message"],
                          'You have successfully bookmarked this article')
@@ -36,18 +38,19 @@ class TestBookmarkArticle(TestBase):
 
     def test_remove_article_from_bookmarks(self):
         """Test if user can remove article from bookmarks"""
-        self.create_article()
-        res = self.login_user()
+        token = self.authentication_token()
+        response = self.create_bookmark_article(token)
+        slug = response.data['slug']
         self.client.post(
             reverse('articles:bookmark_article',
-                    kwargs={'slug': 'another-post'}
+                    kwargs={'slug': slug}
                     ), content_type='application/json',
-            HTTP_AUTHORIZATION='Bearer ' + res.data['token'])
+            HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.post(
             reverse('articles:bookmark_article',
-                    kwargs={'slug': 'another-post'}
+                    kwargs={'slug': slug}
                     ), content_type='application/json',
-            HTTP_AUTHORIZATION='Bearer ' + res.data['token'])
+            HTTP_AUTHORIZATION='Bearer ' + token)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data["message"],

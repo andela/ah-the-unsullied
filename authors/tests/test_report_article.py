@@ -11,7 +11,7 @@ from .base_test import TestBase
 class TestBookmarkArticle(TestBase):
     def add_article(self):
         # register user
-        self.register_user()
+        res = self.register_user()
         self.client.get(self.get_verify_url(self.user_data))
         # login user
         res = self.login_user()
@@ -55,29 +55,13 @@ class TestBookmarkArticle(TestBase):
         )
         return res
 
-    def test_report_article(self):
-        """Test if user can report an article"""
-        self.add_article()
-        res = self.add_new_user()
-        response = self.client.post(
-            reverse('articles:report_article',
-                    kwargs={'slug': 'kenya-moja'}
-                    ),
-            content_type='application/json',
-            data=json.dumps({"message": "this is bad"}),
-            HTTP_AUTHORIZATION='Bearer ' + res.data['token'])
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["message"],
-                         'You have reported this article to the admin')
-
     def test_report_own_article(self):
         """Test if user can report their own an article"""
-        self.create_article()
+        slug = self.create_article().data['slug']
         res = self.login_user()
         response = self.client.post(
             reverse('articles:report_article',
-                    kwargs={'slug': 'another-post'}
+                    kwargs={'slug': slug}
                     ),
             content_type='application/json',
             HTTP_AUTHORIZATION='Bearer ' + res.data['token'])
