@@ -4,7 +4,9 @@ error_messages = {
     "article_404": "Article not found",
     "null_update": "The request body cannot be null",
     "authentication": "Authentication credentials were not provided",
-    "error_favoring": "You cannot report your own article."
+    "error_favoring": "You cannot report your own article.",
+    "empty_bookmarks": "You have not bookmarked any articles.",
+    "empty_favourites": "You have not any articles.",
 }
 
 success_messages = {
@@ -13,4 +15,7 @@ success_messages = {
     "remove_favorite":
         "You have successfully removed this article from favorites",
     "add_favorite": "Article successfully added to favorites",
+    "remove_bookmark":
+        "You have successfully removed this article from your bookmarks",
+    "add_bookmark": "You have successfully bookmarked this article",
 }

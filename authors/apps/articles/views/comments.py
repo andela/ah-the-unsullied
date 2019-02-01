@@ -3,9 +3,7 @@ from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateDestroyAPIView,
     CreateAPIView
 )
-from rest_framework.permissions import (
-    IsAuthenticated, IsAuthenticatedOrReadOnly
-)
+from rest_framework.permissions import (IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -13,15 +11,10 @@ from rest_framework import status
 from authors.apps.articles.models import (
     Article, Comments
 )
-from authors.apps.articles.serializers import (
-    ArticleSerializer, CommentSerializer
-)
-from authors.apps.articles.renderers import (
-    ArticleJSONRenderer, CommentJSONRenderer
-)
+from authors.apps.articles.serializers import (CommentSerializer)
+from authors.apps.articles.renderers import (CommentJSONRenderer)
 
 
-# Create your views here.
 class CommentsListView(ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)

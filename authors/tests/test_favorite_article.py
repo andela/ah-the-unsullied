@@ -40,20 +40,17 @@ class TestFavoriteArticle(TestBase):
     def test_add_unavailable_article_to_favorite(self):
         """Test if user can add unavailable article to favorites"""
         res = self.add_article()
-
         response = self.client.put(
             reverse('articles:favorite_article',
                     kwargs={'slug': 'kenya-mojaa'}
                     ), content_type='application/json',
             HTTP_AUTHORIZATION='Bearer ' + res.data['token'])
-
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data["message"], 'Article not found')
 
     def test_remove_article_from_favorite(self):
         """Test if user can remove article from favorites"""
         res = self.add_article()
-
         self.client.put(
             reverse('articles:favorite_article',
                     kwargs={'slug': 'kenya-moja'}
@@ -64,7 +61,6 @@ class TestFavoriteArticle(TestBase):
             reverse('articles:favorite_article', kwargs={'slug': 'kenya-moja'}
                     ), content_type='application/json',
             HTTP_AUTHORIZATION='Bearer ' + res.data['token'])
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data["message"],
@@ -73,7 +69,6 @@ class TestFavoriteArticle(TestBase):
     def test_get_all_favorite_articles(self):
         """Test if user can get all favorite articles"""
         res = self.add_article()
-
         response = self.client.get(
             reverse('articles:all_favourite_article'),
             content_type='application/json',
