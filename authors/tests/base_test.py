@@ -138,7 +138,26 @@ class TestBase(APITestCase):
             "article": {
                 "title": "another post",
                 "description": "a fitting description",
-                "body": "a body field"
+                "body": "a body field",
+                "tagList":[]
+            }
+        }
+
+        self.valid_taglist_data = {
+            "article": {
+                "title": "another post",
+                "description": "a fitting description",
+                "body": "a body field",
+                "tagList":["tag1", "tag2"]
+            }
+        }
+
+        self.valid_taglist_update_data = {
+            "article": {
+                "title": "another post",
+                "description": "a fitting description",
+                "body": "a body field",
+                "tagList":["tag1", "tag2", "tag3", "tag4"]
             }
         }
 
