@@ -8,6 +8,7 @@ from authors.apps.articles.views.favorite import (FavouriteArticle,
                                                   GetFavouriteArticles)
 from authors.apps.articles.views.articles import (GetUpdateDeleteArticle,
                                                   CreateArticleView,
+                                                  SearchFilter,
                                                   LikeDislikeArticleView)
 
 

@@ -17,7 +17,8 @@ Including another URLconf
 from django.urls import include, path
 from django.contrib import admin
 from rest_framework_swagger.views import get_swagger_view
-from authors.apps.articles.views.articles import TagView
+from authors.apps.articles.views.articles import TagView, CustomSearchFilter
+
 # set the title for the API.
 schema_view = get_swagger_view(title="Authors Haven API")
 
@@ -33,5 +34,6 @@ urlpatterns = [
     path('auth/', include('rest_framework_social_oauth2.urls')),
     path('api/', include('authors.apps.ratings.urls', namespace='ratings')),
     path('api/tags', TagView.as_view()),
-    path('', schema_view)
+    path('', schema_view),
+    path('api/search', CustomSearchFilter.as_view(), name='search'),
 ]

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, Comments, LikeDislike
+from .models import Article, Comments, LikeDislike, FavoriteArticle
 from authors.apps.profiles.models import UserProfile
 from taggit_serializer.serializers import (
     TagListSerializerField,
