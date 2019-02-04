@@ -3,8 +3,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.utils.serializer_helpers import ReturnList
 import operator
 from functools import reduce
-from rest_framework.views import status
-from rest_framework.response import Response
 
 
 class ArticleJSONRenderer(JSONRenderer):
@@ -16,7 +14,7 @@ class ArticleJSONRenderer(JSONRenderer):
             if articles > 0:
                 return json.dumps({
                     'articles': data,
-                    'articlesCount': articles
+                    'articles_count': articles
                 })
         except:
             return json.dumps({
@@ -31,7 +29,7 @@ class CommentJSONRenderer(JSONRenderer):
         if isinstance(data, ReturnList):
             return json.dumps({
                 'comments': data,
-                'commentsCount': len(data)
+                'comments_count': len(data)
             })
         return json.dumps({
             'comment': data

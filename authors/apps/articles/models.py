@@ -3,6 +3,7 @@ from django.contrib.contenttypes.fields import GenericRelation, \
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.signals import pre_save
+from simple_history.models import HistoricalRecords
 
 # Third party imports
 from taggit.managers import TaggableManager
@@ -59,7 +60,7 @@ class Article(models.Model):
     title = models.CharField(max_length=100, blank=False)
     description = models.CharField(max_length=230, blank=False)
     body = models.TextField(blank=False)
-    tagList = TaggableManager()
+    tag_list = TaggableManager()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     votes = GenericRelation(LikeDislike, related_query_name='articles')
@@ -70,9 +71,8 @@ class Article(models.Model):
 
 class Comments(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
     body = models.TextField(max_length=200)
-    is_Child = models.BooleanField(default=False)
     author = models.ForeignKey(User, related_name='author_rel',
                                on_delete=models.CASCADE)
     article = models.ForeignKey(Article, related_name='comments',
@@ -80,12 +80,10 @@ class Comments(models.Model):
     parent = models.ForeignKey('self', null=True, blank=True,
                                on_delete=models.CASCADE,
                                related_name='threads')
+    history = HistoricalRecords()
 
     def __str__(self):
         return str(self.body)
-
-    class Meta:
-        ordering = ['-created_at']
 
 
 def slug_pre_save_receiver(sender, instance, *args, **kwargs):

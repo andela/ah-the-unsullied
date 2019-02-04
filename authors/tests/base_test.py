@@ -120,6 +120,11 @@ class TestBase(APITestCase):
             'body': 'poseidon'
         }
 
+        self.edit_data = {
+            "comment":{
+            'body': 'sammy'
+        }}
+
         self.update_comment_data = {
             'body': 'poseidon'
         }
@@ -139,7 +144,7 @@ class TestBase(APITestCase):
                 "title": "another post",
                 "description": "a fitting description",
                 "body": "a body field",
-                "tagList":[]
+                "tag_list":[]
             }
         }
 
@@ -148,7 +153,7 @@ class TestBase(APITestCase):
                 "title": "another post",
                 "description": "a fitting description",
                 "body": "a body field",
-                "tagList":["tag1", "tag2"]
+                "tag_list":["tag1", "tag2"]
             }
         }
 
@@ -157,7 +162,7 @@ class TestBase(APITestCase):
                 "title": "another post",
                 "description": "a fitting description",
                 "body": "a body field",
-                "tagList":["tag1", "tag2", "tag3", "tag4"]
+                "tag_list":["tag1", "tag2", "tag3", "tag4"]
             }
         }
 
@@ -430,3 +435,19 @@ class TestBase(APITestCase):
         res = self.get_token_signup_user_3()
         token = res.data['token']
         return token
+
+    def edit_comment(self):
+        slug = self.create_article().data['slug']
+        url = reverse("articles:comment", kwargs={"slug": slug})
+        response = self.client.post(url, self.comment_data, format="json")
+        comment_id = response.data['id']
+        edit_url = reverse(
+            "articles:thread",
+            kwargs={"slug": slug, "id": comment_id})
+        self.client.put(edit_url, self.edit_data, format="json")
+        return [slug, comment_id]
+
+    def edit_history_url(self, slug, id):
+        return reverse(
+            "articles:comment-history",
+            kwargs={"slug": slug, "comment_id": id})

@@ -7,6 +7,8 @@ error_messages = {
     "error_favoring": "You cannot report your own article.",
     "empty_bookmarks": "You have not bookmarked any articles.",
     "empty_favourites": "You have not any articles.",
+    "comment_not_found": "This comment does not exist.",
+    "non_int": "Provide integer value for comment id."
 }
 
 success_messages = {

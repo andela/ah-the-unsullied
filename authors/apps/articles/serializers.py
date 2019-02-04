@@ -18,7 +18,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     rating = serializers.SerializerMethodField(read_only=True)
-    tagList = TagListSerializerField()
+    tag_list = TagListSerializerField()
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
@@ -31,8 +31,8 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
         model = Article
 
         fields = ['slug', 'title', 'description', 'body',
-                   'tagList','created_at','updated_at',
-                   'author', 'rating']
+                  'tag_list', 'created_at','updated_at',
+                  'author', 'rating']
 
 
 class UpdateArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
@@ -42,7 +42,7 @@ class UpdateArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     rating = serializers.SerializerMethodField()
-    tagList = TagListSerializerField()
+    tag_list = TagListSerializerField()
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
@@ -53,7 +53,7 @@ class UpdateArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['slug', 'title', 'description', 'body', 'tagList', 'created_at',
+        fields = ['slug', 'title', 'description', 'body', 'tag_list', 'created_at',
                   'updated_at', 'author', 'rating']
 
 
@@ -86,12 +86,11 @@ class CommentSerializer(serializers.ModelSerializer):
         threads = [
             {
                 'id': thread.id,
-                'child': thread.is_Child,
                 'body': thread.body,
                 'author': ProfileSerialiazer(
                     instance=UserProfile.objects.get(user=thread.author)).data,
                 'created_at': self.format_date(thread.created_at),
-                'updated_at': self.format_date(thread.updated_at)
+                'updated_at': self.format_date(thread.updated_at),
             } for thread in instance.threads.all()
         ]
 
@@ -115,7 +114,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'author',
             'article',
             'parent',
-            'is_Child',
+            'parent_id'
         )
 
 
@@ -178,3 +177,13 @@ class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookmarkArticleModel
         fields = ('title', 'slug', 'author_name', 'user_id', 'article_id')
+
+
+class CommentHistorySerializer(serializers.ModelSerializer):
+    """
+    This class handles the history of the comment edited
+    """
+
+    class Meta:
+        model = Comments
+        fields = ('id', 'body', 'created_at', 'updated_at')

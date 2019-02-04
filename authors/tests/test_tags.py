@@ -18,7 +18,7 @@ class TagCreation(TestBase):
             data=json.dumps(self.valid_taglist_data),
             content_type='application/json'
         )
-        length_of_taglist = len(response.data['tagList'])
+        length_of_taglist = len(response.data["tag_list"])
         self.assertEqual(length_of_taglist, 2)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -38,6 +38,6 @@ class TagCreation(TestBase):
             data=json.dumps(self.valid_taglist_update_data),
             content_type='application/json'
         )
-        length_of_taglist = len(response.data['tagList'])
+        length_of_taglist = len(response.data["tag_list"])
         self.assertEqual(length_of_taglist, 4)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
