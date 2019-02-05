@@ -1,5 +1,6 @@
 # django imports
 import json
+import os
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -25,6 +26,7 @@ class TestBase(APITestCase):
         self.update_url = reverse('authentication:user_update')
         self.article_url = reverse('articles:article_create')
         self.social_auth_url = reverse('authentication:social_auth')
+        self.base_url = os.getenv('BASE_URL')
 
         self.user_data = {
             "user": {
@@ -115,6 +117,11 @@ class TestBase(APITestCase):
         }
         self.reset_password_invalid_email = {
             "email": "kenyamoja@gmail.com"
+        }
+        self.new_article = {
+            'title': 'test',
+            'description': 'learn TDD',
+            'body': 'best tests are done at night'
         }
         self.comment_data = {
             'body': 'poseidon'
@@ -207,13 +214,13 @@ class TestBase(APITestCase):
         self.no_backend = {
         }
 
-
         self.new_article = {
             'title': 'test',
             'description': 'learn TDD',
 
             'body': 'best tests are done at night'
         }
+
         self.user_data = {
             "user": {
                 "username": "sam",
@@ -221,13 +228,7 @@ class TestBase(APITestCase):
                 "password": "A23DVFRss@"
             }
         }
-        self.user_data2 = {
-            "user": {
-                "username": "catherine",
-                "email": "catherine@gmail.com",
-                "password": "A23DVFRss@"
-            }
-        }
+
         self.user_data3 = {
             "user": {
                 "username": "job",
@@ -240,16 +241,24 @@ class TestBase(APITestCase):
                 "bio": "catherine"
             }
         }
+
         self.rating = {
             "rating": "3"
         }
+
         self.another_rating = {
             "rating": "4"
         }
+
         self.wrong_rating = {
             "rating": "9"
         }
+
         self.non_user_token = 'Bearer Token'
+
+        self.share_email_data = {
+            "email": "jake@gmail.com"
+        }
 
     def get_token_on_signup(self, ):
         return self.client.post(
@@ -262,6 +271,9 @@ class TestBase(APITestCase):
         res = self.get_token_on_signup()
         token = res.data['token']
         return token
+        self.share_email_data = {
+            "email": "jake@gmail.com"
+        }
 
     def get_token(self):
         """Register and login a user"""
@@ -279,7 +291,6 @@ class TestBase(APITestCase):
         )
         token = response.data['token']
         return token
-
 
     def get_verify_url(self, user):
         self.register_user()
@@ -385,18 +396,6 @@ class TestBase(APITestCase):
             comment_url, self.comment_data, format="json")
         return response
 
-    def get_token_on_signup(self, ):
-        return self.client.post(
-            reverse('authentication:signup_url'),
-            data=json.dumps(self.user_data),
-            content_type='application/json'
-        )
-
-    def authentication_token(self, ):
-        res = self.get_token_on_signup()
-        token = res.data['token']
-        return token
-
     def create_article(self, ):
         token = self.authentication_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
@@ -451,3 +450,22 @@ class TestBase(APITestCase):
         return reverse(
             "articles:comment-history",
             kwargs={"slug": slug, "comment_id": id})
+
+    def share_article_via_email(self):
+        slug = self.create_article().data['slug']
+        email_share_url = reverse(
+            "articles:email_share", kwargs={"slug": slug})
+        return self.client.post(
+            email_share_url, self.share_email_data, format="json")
+
+    def share_article_via_facebook(self):
+        slug = self.create_article().data['slug']
+        facebook_share_url = reverse(
+            "articles:facebook_share", kwargs={"slug": slug})
+        return facebook_share_url
+
+    def share_article_via_twitter(self):
+        slug = self.create_article().data['slug']
+        twitter_share_url = reverse(
+            "articles:twitter_share", kwargs={"slug": slug})
+        return twitter_share_url

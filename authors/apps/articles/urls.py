@@ -1,15 +1,26 @@
 from django.urls import path
+
 from authors.apps.articles.models import LikeDislike
-from authors.apps.articles.views.comments import (
-    CommentsListView, CommentsRetrieveUpdateDestroy, CommentHistoryListView)
-from authors.apps.articles.views.bookmark import (BookmarkArticle,
-                                                  GetBookmarkedArticles)
-from authors.apps.articles.views.favorite import (FavouriteArticle,
-                                                  GetFavouriteArticles)
 from authors.apps.articles.views.articles import (GetUpdateDeleteArticle,
                                                   CreateArticleView,
-                                                  SearchFilter,
                                                   LikeDislikeArticleView)
+from authors.apps.articles.views.bookmark import (BookmarkArticle,
+                                                  GetBookmarkedArticles)
+from authors.apps.articles.views.comments import (
+    CommentsListView, CommentsRetrieveUpdateDestroy, CommentHistoryListView,
+    LikeDislikeCommentsView
+)
+from authors.apps.articles.views.favorite import (FavouriteArticle,
+                                                  GetFavouriteArticles)
+from authors.apps.articles.views.articles import (
+     GetUpdateDeleteArticle,CreateArticleView,
+     SearchFilter,LikeDislikeArticleView,
+     ShareArticleViaEmail,ShareArticleViaFacebook,
+     ShareArticleViaTwitter
+     )
+from authors.apps.articles.views.report_article import (
+    ReportArticleApi, GetReportedArticles
+)
 
 
 """
@@ -44,4 +55,24 @@ urlpatterns = [
     path('/<slug>/comments/<comment_id>/history',
          CommentHistoryListView.as_view(),
          name='comment-history'),
+    path('/<slug>/comments/<int:comment_id>/like',
+         LikeDislikeCommentsView.as_view(vote_type=LikeDislike.LIKE),
+         name='like-comment'
+         ),
+    path('/<slug>/comments/<int:comment_id>/dislike',
+         LikeDislikeCommentsView.as_view(vote_type=LikeDislike.DISLIKE),
+         name='dislike-comment'),
+    path('/<slug>/email/share',
+         ShareArticleViaEmail.as_view(), name='email_share'
+         ),
+    path('/<slug>/facebook/share',
+         ShareArticleViaFacebook.as_view(), name='facebook_share'
+         ),
+    path('/<slug>/twitter/share',
+         ShareArticleViaTwitter.as_view(), name='twitter_share'
+         ),
+    path('/report/<slug>', ReportArticleApi.as_view(),
+         name='report_article'),
+    path('/reported/', GetReportedArticles.as_view(),
+         name='reported_articles')
 ]

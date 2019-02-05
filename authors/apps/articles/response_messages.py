@@ -8,7 +8,9 @@ error_messages = {
     "empty_bookmarks": "You have not bookmarked any articles.",
     "empty_favourites": "You have not any articles.",
     "comment_not_found": "This comment does not exist.",
-    "non_int": "Provide integer value for comment id."
+    "non_int": "Provide integer value for comment id.",
+    "report_error": "You cannot report your own article.",
+    "already_reported": "You have already reported this article",
 }
 
 success_messages = {
@@ -20,4 +22,5 @@ success_messages = {
     "remove_bookmark":
         "You have successfully removed this article from your bookmarks",
     "add_bookmark": "You have successfully bookmarked this article",
+    "report_email": "You have reported this article to the admin",
 }

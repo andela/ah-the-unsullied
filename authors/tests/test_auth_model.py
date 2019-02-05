@@ -8,14 +8,16 @@ class TestAuthModel(TestCase):
 
     def test_user_creation(self):
         User.objects.create_user(
-            username='Monster', email='drink@drink.com', password='hdfhfhhdf34W!'
+            username='Monster', email='drink@drink.com',
+            password='hdfhfhhdf34W!'
         )
         monster = User.objects.get(username='Monster')
         self.assertEqual(monster.username, 'Monster')
 
     def test_super_user_creation(self):
         User.objects.create_superuser(
-            username='Monster', email='drink@drink.com', password='hdfhfhhdf34W!'
+            username='Monster', email='drink@drink.com',
+            password='hdfhfhhdf34W!'
         )
         monster = User.objects.get(username='Monster')
         self.assertEqual(monster.username, 'Monster')

@@ -53,6 +53,7 @@ class LikeDislike(models.Model):
     objects = LikeDislikeManager()
 
 
+# Create your models here.
 class Article(models.Model):
     slug = models.SlugField(max_length=253, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -64,6 +65,7 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     votes = GenericRelation(LikeDislike, related_query_name='articles')
+    read_time = models.TextField(default='null')
 
     def __str__(self):
         return str(self.title)
@@ -81,6 +83,7 @@ class Comments(models.Model):
                                on_delete=models.CASCADE,
                                related_name='threads')
     history = HistoricalRecords()
+    votes = GenericRelation(LikeDislike, related_query_name='comments')
 
     def __str__(self):
         return str(self.body)
@@ -120,3 +123,16 @@ class BookmarkArticleModel(models.Model):
 
     def __str__(self):
         return "{}".format(self.article)
+
+
+class ReportArticle(models.Model):
+    """Report Article model"""
+
+    slug = models.CharField(max_length=253, blank=True)
+    reporter_id = models.CharField(max_length=253, blank=True)
+    author_id = models.CharField(max_length=253, blank=True)
+    message = models.TextField(blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{}".format(self.slug)

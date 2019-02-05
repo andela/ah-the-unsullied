@@ -1,5 +1,6 @@
+import readtime
 from rest_framework import serializers
-from .models import Article, Comments, LikeDislike, FavoriteArticle
+from .models import Article, Comments, LikeDislike, ReportArticle
 from authors.apps.profiles.models import UserProfile
 from taggit_serializer.serializers import (
     TagListSerializerField,
@@ -12,13 +13,13 @@ from taggit.models import Tag
 
 
 class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
-
     author = serializers.SerializerMethodField()
     body = serializers.CharField(required=True)
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     rating = serializers.SerializerMethodField(read_only=True)
     tag_list = TagListSerializerField()
+    read_time = serializers.SerializerMethodField()
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
@@ -27,22 +28,24 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     def get_rating(self, article):
         return get_article_rating(article)
 
+    def get_read_time(self, article):
+        read_time = readtime.of_text(article.body)
+        return str(read_time)
+
     class Meta:
         model = Article
-
-        fields = ['slug', 'title', 'description', 'body',
-                  'tag_list', 'created_at','updated_at',
-                  'author', 'rating']
+        fields = ['slug', 'title', 'description', 'body', 'tag_list',
+                  'created_at', 'updated_at', 'author', 'rating', 'read_time']
 
 
-class UpdateArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
-
+class UpdateArticleSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     body = serializers.CharField(required=True)
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     rating = serializers.SerializerMethodField()
     tag_list = TagListSerializerField()
+    read_time = serializers.SerializerMethodField()
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
@@ -51,10 +54,14 @@ class UpdateArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     def get_rating(self, article):
         return get_article_rating(article)
 
+    def get_read_time(self, article):
+        read_time = readtime.of_text(article.body)
+        return str(read_time)
+
     class Meta:
         model = Article
-        fields = ['slug', 'title', 'description', 'body', 'tag_list', 'created_at',
-                  'updated_at', 'author', 'rating']
+        fields = ['slug', 'title', 'description', 'body', 'tag_list',
+                  'created_at', 'updated_at', 'author', 'rating', 'read_time']
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -187,3 +194,11 @@ class CommentHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = ('id', 'body', 'created_at', 'updated_at')
+
+
+class ReportArticleSerializer(serializers.ModelSerializer):
+    message = serializers.CharField(required=True)
+
+    class Meta:
+        model = ReportArticle
+        fields = ('slug', 'author_id', 'message', 'reporter_id')
