@@ -89,7 +89,6 @@ class GetUpdateDeleteArticle(RetrieveUpdateDestroyAPIView):
         except Article.DoesNotExist:
             message = error_messages['article_404']
             return Response(message, status=status.HTTP_404_NOT_FOUND)
-
         serializer = ArticleSerializer(
             instance=article, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -300,6 +299,7 @@ class ShareArticleViaEmail(CreateAPIView):
 
 class ShareArticleViaFacebook(CreateAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = ArticleSerializer
 
     def post(self, request, *args, **kwargs):
         try:
@@ -317,6 +317,7 @@ class ShareArticleViaFacebook(CreateAPIView):
 
 class ShareArticleViaTwitter(CreateAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = ArticleSerializer
 
     def post(self, request, *args, **kwargs):
         try:

@@ -33,7 +33,12 @@ urlpatterns = [
                                  namespace='articles')),
     path('auth/', include('rest_framework_social_oauth2.urls')),
     path('api/', include('authors.apps.ratings.urls', namespace='ratings')),
+
     path('api/tags', TagView.as_view()),
     path('', schema_view),
+
     path('api/search', CustomSearchFilter.as_view(), name='search'),
+
+    path('auth/', include('rest_framework_social_oauth2.urls')),
+
 ]

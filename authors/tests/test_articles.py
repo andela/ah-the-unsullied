@@ -218,3 +218,22 @@ class TestArticles(TestBase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(response.data, error_messages['null_update'])
+
+    def test_get_article_returns_article_read_time(self):
+        """
+        Tests an article read time is returned
+        """
+        # create the article
+        self.create_article()
+
+        # get the article
+        self.client.get(self.get_verify_url(self.user_data))
+        response = self.client.get(
+            reverse(
+                'articles:detail_article',
+                kwargs={'slug': 'another-post'}
+            ),
+            content_type='application/json'
+        )
+        self.assertEqual(response.data['read_time'], '1 min read')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
