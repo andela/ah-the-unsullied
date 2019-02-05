@@ -1,6 +1,6 @@
 import readtime
 from rest_framework import serializers
-from .models import Article, Comments, LikeDislike, FavoriteArticle
+from .models import Article, Comments, LikeDislike, ReportArticle
 from authors.apps.profiles.models import UserProfile
 from taggit_serializer.serializers import (
     TagListSerializerField,
@@ -194,3 +194,11 @@ class CommentHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = ('id', 'body', 'created_at', 'updated_at')
+
+
+class ReportArticleSerializer(serializers.ModelSerializer):
+    message = serializers.CharField(required=True)
+
+    class Meta:
+        model = ReportArticle
+        fields = ('slug', 'author_id', 'message', 'reporter_id')

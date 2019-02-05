@@ -118,6 +118,11 @@ class TestBase(APITestCase):
         self.reset_password_invalid_email = {
             "email": "kenyamoja@gmail.com"
         }
+        self.new_article = {
+            'title': 'test',
+            'description': 'learn TDD',
+            'body': 'best tests are done at night'
+        }
         self.comment_data = {
             'body': 'poseidon'
         }

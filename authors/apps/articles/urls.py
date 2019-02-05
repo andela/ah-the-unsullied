@@ -18,6 +18,9 @@ from authors.apps.articles.views.articles import (
      ShareArticleViaEmail,ShareArticleViaFacebook,
      ShareArticleViaTwitter
      )
+from authors.apps.articles.views.report_article import (
+    ReportArticleApi, GetReportedArticles
+)
 
 """
 Django 2.0 requires the app_name variable set when using include namespace
@@ -66,5 +69,9 @@ urlpatterns = [
          ),
     path('/<slug>/twitter/share',
          ShareArticleViaTwitter.as_view(), name='twitter_share'
-         )
+         ),
+    path('/report/<slug>', ReportArticleApi.as_view(),
+         name='report_article'),
+    path('/reported/', GetReportedArticles.as_view(),
+         name='reported_articles')
 ]

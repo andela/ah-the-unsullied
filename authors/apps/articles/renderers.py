@@ -58,3 +58,23 @@ class TagJSONRenderer(JSONRenderer):
         return json.dumps({
             'tag': list(data['results'][0].values()),
         })
+
+
+class CommentJSONRenderer(JSONRenderer):
+    charset = 'utf-8'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        return json.dumps({
+            'comment': data,
+            'commentsCount': len(data)
+        })
+
+
+class CommentJSONRenderer(JSONRenderer):
+    charset = 'utf-8'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        return json.dumps({
+            'comment': data,
+            'commentsCount': len(data)
+        })

@@ -66,6 +66,7 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     votes = GenericRelation(LikeDislike, related_query_name='articles')
     read_time = models.TextField(default='null')
+    is_reported = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.title)
@@ -123,3 +124,16 @@ class BookmarkArticleModel(models.Model):
 
     def __str__(self):
         return "{}".format(self.article)
+
+
+class ReportArticle(models.Model):
+    """Report Article model"""
+
+    slug = models.CharField(max_length=253, blank=True)
+    reporter_id = models.CharField(max_length=253, blank=True)
+    author_id = models.CharField(max_length=253, blank=True)
+    message = models.TextField(blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{}".format(self.slug)
