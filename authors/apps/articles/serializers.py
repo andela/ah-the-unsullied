@@ -31,7 +31,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
         model = Article
 
         fields = ['slug', 'title', 'description', 'body',
-                  'tag_list', 'created_at','updated_at',
+                  'tag_list', 'created_at', 'updated_at',
                   'author', 'rating']
 
 
