@@ -66,6 +66,7 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     votes = GenericRelation(LikeDislike, related_query_name='articles')
     read_time = models.TextField(default='null')
+    is_reported = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.title)

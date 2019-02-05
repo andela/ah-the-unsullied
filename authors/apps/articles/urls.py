@@ -22,7 +22,6 @@ from authors.apps.articles.views.report_article import (
     ReportArticleApi, GetReportedArticles
 )
 
-
 """
 Django 2.0 requires the app_name variable set when using include namespace
 """
