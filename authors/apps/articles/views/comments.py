@@ -1,19 +1,22 @@
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.generics import (
-    ListCreateAPIView, RetrieveUpdateDestroyAPIView,
-    CreateAPIView
+    ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 )
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework import status
 
 # local imports
 from authors.apps.articles.models import (
-    Article, Comments
+    Article, Comments, LikeDislike
 )
-from authors.apps.articles.serializers import (CommentSerializer,
-                                               CommentHistorySerializer)
-from authors.apps.articles.renderers import CommentJSONRenderer
+from authors.apps.articles.renderers import (
+    CommentJSONRenderer, LikeArticleJSONRenderer
+)
+from authors.apps.articles.serializers import (
+    CommentSerializer, LikeDislikeSerializer, CommentHistorySerializer
+)
 from authors.apps.articles.response_messages import error_messages
 
 # Create your views here.
@@ -162,3 +165,50 @@ class CommentHistoryListView(ListCreateAPIView):
 
         serializer = self.serializer_class(comment, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class LikeDislikeCommentsView(ListCreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = LikeDislikeSerializer
+    renderer_classes = (LikeArticleJSONRenderer,)
+    vote_type = None
+
+    def post(self, request, slug, comment_id):
+        """""This method posts likes and dislikes to comments"""
+
+        comment = get_object_or_404(Comments, id=comment_id)
+
+        # message to display after like or dislike
+        try:
+            like_dislike = LikeDislike.objects.get(
+                content_type=ContentType.objects.get_for_model(comment),
+                author=request.user,
+                object_id=comment.id)
+            if like_dislike.vote is not self.vote_type:
+                like_dislike.vote = self.vote_type
+                like_dislike.save(update_fields=['vote'])
+            else:
+                like_dislike.delete()
+        except LikeDislike.DoesNotExist:
+            comment.votes.create(author=request.user, vote=self.vote_type)
+            comment.save()
+
+        return Response({
+            "likes_on_comment": comment.votes.likes().count(),
+            "dislikes_on_comment": comment.votes.dislikes().count(),
+        },
+            content_type="application/json",
+            status=status.HTTP_201_CREATED
+        )
+
+    def get(self, request, slug, comment_id):
+
+        comment = get_object_or_404(Comments, id=comment_id)
+
+        return Response({
+            "likes_on_comment": comment.votes.likes().count(),
+            "dislikes_on_comment": comment.votes.dislikes().count(),
+        },
+            content_type="application/json",
+            status=status.HTTP_200_OK
+        )
