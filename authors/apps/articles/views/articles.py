@@ -300,6 +300,7 @@ class ShareArticleViaEmail(CreateAPIView):
 
 class ShareArticleViaFacebook(CreateAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = ArticleSerializer
 
     def post(self, request, *args, **kwargs):
         try:
@@ -317,6 +318,7 @@ class ShareArticleViaFacebook(CreateAPIView):
 
 class ShareArticleViaTwitter(CreateAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = ArticleSerializer
 
     def post(self, request, *args, **kwargs):
         try:
