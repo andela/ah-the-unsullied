@@ -425,6 +425,17 @@ class TestBase(APITestCase):
         token = res.data['token']
         return token
 
+    def follow(self):
+        token = self.authentication_token()
+        url = reverse('profiles:profile_details',
+                      kwargs={'username': 'sam'})
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        self.client.get(url)
+        self.authentication_token_2()
+        follow_url = reverse('profiles:follow',
+                             kwargs={'username': 'abdi'})
+        return self.client.post(follow_url)
+
     def verify_user(self):
         token = self.authentication_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
