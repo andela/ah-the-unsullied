@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote
 from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView, ListCreateAPIView,
-    ListAPIView,CreateAPIView
+    ListAPIView, CreateAPIView
 )
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -18,19 +18,28 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from taggit.models import Tag
 
 # local imports
+from authors.apps.articles.models import (
+    Article,
+    LikeDislike,
+    HighlightArticleModel
+)
 from authors.apps.articles.models import Article, LikeDislike
+from authors.apps.reading_stats.models import ReadingStats
 from authors.apps.articles.serializers import (
     ArticleSerializer, UpdateArticleSerializer,
-    LikeDislikeSerializer, CustomTagSerializer
-    )
+    HighlightArticleSerializer, LikeDislikeSerializer,
+    CustomTagSerializer
+)
 from authors.apps.authentication.serializers import EmailCheckSerializer
+
 from authors.apps.articles.renderers import (
     ArticleJSONRenderer,
     LikeArticleJSONRenderer,
     TagJSONRenderer
-    )
+)
 from authors.apps.articles.response_messages import (error_messages,
-                                                     success_messages)
+                                                     success_messages
+                                                     )
 from authors.apps.core.pagination import CustomPagination
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -89,6 +98,16 @@ class GetUpdateDeleteArticle(RetrieveUpdateDestroyAPIView):
         except Article.DoesNotExist:
             message = error_messages['article_404']
             return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.id:
+            if not ReadingStats.objects.filter(user=request.user,
+                                            article=article).exists():
+                reading_stat = ReadingStats(
+                    user=request.user,
+                    article=article
+                )
+                reading_stat.is_read = True
+                reading_stat.save()
 
         serializer = ArticleSerializer(
             instance=article, context={'request': request})
@@ -333,3 +352,113 @@ class ShareArticleViaTwitter(CreateAPIView):
         url_link = twitter_url + article_link
         shared_post_url = {'link': url_link}
         return Response(shared_post_url, status=status.HTTP_200_OK)
+
+
+class HighlightArticle(ListCreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = HighlightArticleSerializer
+    queryset = HighlightArticleModel.objects.all()
+
+    def highlight_index(self, begin_point, end_point):
+        """
+        method picks the selected index values, stores them in a variable
+        """
+        index_values = [begin_point, end_point]
+        return index_values
+
+    def create(self, request, slug):
+        """Get an article to comment"""
+
+        article = get_object_or_404(Article, slug=slug)
+        comment = request.data.get('comment', {})
+
+        try:
+
+            if int(comment.get('begin_index')) > int(comment.get('end_index')):
+                return Response({
+                    'message': "The begin index should be less than the end index"})
+
+            highlight_range = self.highlight_index(
+                int(comment.get('begin_index', 0)),
+                int(comment.get('end_index', 0)))
+
+        except ValueError:
+            return Response({
+                'error': 'Please enter integer values only',
+            }, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        highlited_article = str(
+            article.body[highlight_range[0]:highlight_range[1]])
+
+        comment['highlited_article'] = highlited_article
+
+        serializer = HighlightArticleSerializer(data=comment, partial=True)
+        if serializer.is_valid():
+            serializer.save(author=self.request.user, article_id=article.pk)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, slug, *args, **kwargs):
+
+        article = Article.objects.filter(slug=slug).first()
+        if not article:
+            message = {"error": "Article doesn't exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+        highlightcomment = article.highlight.filter()
+        serializer = self.serializer_class(highlightcomment, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RetrieveUpdateDeleteHighlight(RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = HighlightArticleSerializer
+    queryset = HighlightArticleModel.objects.all()
+    lookup_field = 'id'
+
+    def get(self, request, slug, id):
+        article = Article.objects.filter(slug=slug).first()
+        if not article:
+            message = {"error": "Article doesn't exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+        try:
+            highlightcomment = article.highlight.filter(id=id).first().pk
+            return super().get(request, highlightcomment)
+        except:
+            message = {"error": "Highlight comment doesn't exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, slug, id):
+
+        article = Article.objects.filter(slug=slug).first()
+        if not article:
+            message = {"error": "Article doesn't exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+        highlightcomment = article.highlight.filter(id=id).first()
+        if not highlightcomment:
+            message = {"message": "Highlight comment does not exist"}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        update_comment = request.data.get('comment', {})['body']
+        data = {
+            'body': update_comment,
+            'article': article.pk,
+        }
+        serializer = self.serializer_class(
+            highlightcomment, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, slug, id):
+        article = Article.objects.filter(slug=slug).first()
+        if not article:
+            message = {"error": "Article doesn't exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+        try:
+            highlightcomment = article.highlight.filter(id=id).first().pk
+        except:
+            message = {"error": "Highlight comment doesn't exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+        super().delete(self, request, highlightcomment)
+        message = {"message": "Highlight Comment deleted successfully"}
+        return Response(
+            message, status.HTTP_200_OK)

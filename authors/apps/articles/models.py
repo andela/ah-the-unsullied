@@ -117,6 +117,7 @@ class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
+
 class BookmarkArticleModel(models.Model):
     """Bookmark Article model"""
     article_id = models.ForeignKey(Article, on_delete=models.CASCADE)
@@ -137,3 +138,20 @@ class ReportArticle(models.Model):
 
     def __str__(self):
         return "{}".format(self.slug)
+
+class HighlightArticleModel(models.Model):
+    body = models.TextField()
+    author = models.ForeignKey(User, related_name='author_relate',
+                               on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, related_name='highlight',
+                                on_delete=models.CASCADE)
+    highlited_article = models.TextField(blank=True, null=True)
+    begin_index = models.IntegerField(blank=True, null=True)
+    end_index = models.IntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.body)
+
+    class Meta:
+        ordering = ['-created_at']

@@ -15,11 +15,13 @@ class TestShareArticles(TestBase):
         self.assertEqual(response.data, "Article successfully shared")
 
     def test_share_article_via_facebook(self):
-        facebook_share_url = self.share_article_via_facebook()
+        slug = self.create_article().data['slug']
+        facebook_share_url = reverse(
+            "articles:facebook_share", kwargs={"slug": slug})
         response = self.client.post(facebook_share_url)
         self.assertEqual(response.data['link'],
                          'https://www.facebook.com/sharer/sharer.php?u='
-                         + self.base_url + 'api/articles/another-post')
+                         + self.base_url + 'api/articles/{}'.format(slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_share_article_via_twitter(self):
@@ -29,7 +31,7 @@ class TestShareArticles(TestBase):
         response = self.client.post(twitter_share_url)
         self.assertEqual(response.data['link'],
                          'https://twitter.com/home?status=The%20unsullied%20have%20shared%20'
-                         + self.base_url + 'api/articles/another-post')
+                         + self.base_url + 'api/articles/{}'.format(slug))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_share_nonexistant_article_via_email(self):
