@@ -79,12 +79,12 @@ class TestArticles(TestBase):
 
     def test_get_single_article(self):
         """Test to get a single article """
-        self.create_article()
+        slug = self.create_article().data['slug']
         self.client.get(self.get_verify_url(self.user_data))
         response = self.client.get(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'}
+                kwargs={'slug': slug}
             ),
             content_type='application/json'
         )
@@ -97,7 +97,7 @@ class TestArticles(TestBase):
         response = self.client.get(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-posts'}
+                kwargs={'slug': "hshshsh"},
             ),
             content_type='application/json'
         )
@@ -106,12 +106,12 @@ class TestArticles(TestBase):
 
     def test_update_article(self):
         """Test updating an article """
-        self.create_article()
+        slug = self.create_article().data['slug']
         self.client.get(self.get_verify_url(self.user_data))
         response = self.client.put(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'},
+                kwargs={'slug': slug},
             ),
             data=json.dumps(self.invalid_article_data),
             content_type='application/json'
@@ -125,7 +125,7 @@ class TestArticles(TestBase):
         response = self.client.put(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-posts'},
+                kwargs={'slug': "hshshs"},
             ),
             data=json.dumps(self.invalid_article_data),
             content_type='application/json'
@@ -135,12 +135,12 @@ class TestArticles(TestBase):
 
     def test_delete_article(self):
         """Test deleting an article """
-        self.create_article()
+        slug = self.create_article().data['slug']
         self.client.get(self.get_verify_url(self.user_data))
         response = self.client.delete(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'},
+                kwargs={'slug': slug},
             ),
             content_type='application/json'
         )
@@ -149,40 +149,27 @@ class TestArticles(TestBase):
 
     def test_delete_nonexistent_article(self):
         """Test delete a non-existing article """
-        self.create_article()
+        slug = self.create_article().data['slug']
         self.client.get(self.get_verify_url(self.user_data))
         response = self.client.delete(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-posts'},
+                kwargs={'slug': "hshshs"},
             ),
             content_type='application/json'
         )
         self.assertIn(error_messages['article_404'], response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_delete_unauthorized(self):
-        """Test delete with an unauthorized user"""
-        response = self.client.delete(
-            reverse(
-                'articles:detail_article',
-                kwargs={'slug': 'another-post'},
-            ),
-            content_type='application/json'
-        )
-        self.assertIn(error_messages['authentication'],
-                      response.data['detail'])
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
     def test_delete_article_none_author(self):
         """ Test delete if article is not owner """
-        self.create_article()
+        slug = self.create_article().data['slug']
         token = self.authentication_token_2()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.delete(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'},
+                kwargs={'slug': slug},
             ),
             content_type='application/json'
         )
@@ -191,13 +178,13 @@ class TestArticles(TestBase):
 
     def test_update_article_none_author(self):
         """ Test update if article is not owner """
-        self.create_article()
+        slug = self.create_article().data['slug']
         token = self.authentication_token_2()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.put(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'},
+                kwargs={'slug': slug},
             ),
             content_type='application/json'
         )
@@ -206,12 +193,12 @@ class TestArticles(TestBase):
 
     def test_update_article_null_data(self):
         """Test updating an article with null inputs"""
-        self.create_article()
+        slug = self.create_article().data['slug']
         self.client.get(self.get_verify_url(self.user_data))
         response = self.client.put(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'},
+                kwargs={'slug': slug},
             ),
             data=json.dumps(self.null_article_data),
             content_type='application/json'
@@ -224,14 +211,14 @@ class TestArticles(TestBase):
         Tests an article read time is returned
         """
         # create the article
-        self.create_article()
+        slug = self.create_article().data['slug']
 
         # get the article
         self.client.get(self.get_verify_url(self.user_data))
         response = self.client.get(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'}
+                kwargs={'slug': slug}
             ),
             content_type='application/json'
         )

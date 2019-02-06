@@ -1,6 +1,10 @@
 import readtime
 from rest_framework import serializers
-from .models import Article, Comments, LikeDislike, ReportArticle
+from .models import (
+    Article, Comments, 
+    LikeDislike, FavoriteArticle,
+    HighlightArticleModel,ReportArticle
+)
 from authors.apps.profiles.models import UserProfile
 from taggit_serializer.serializers import (
     TagListSerializerField,
@@ -34,8 +38,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['slug', 'title', 'description', 'body', 'tag_list',
-                  'created_at', 'updated_at', 'author', 'rating', 'read_time']
+        fields = '__all__'
 
 
 class UpdateArticleSerializer(serializers.ModelSerializer):
@@ -60,8 +63,7 @@ class UpdateArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['slug', 'title', 'description', 'body', 'tag_list',
-                  'created_at', 'updated_at', 'author', 'rating', 'read_time']
+        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -190,7 +192,6 @@ class CommentHistorySerializer(serializers.ModelSerializer):
     """
     This class handles the history of the comment edited
     """
-
     class Meta:
         model = Comments
         fields = ('id', 'body', 'created_at', 'updated_at')
@@ -202,3 +203,29 @@ class ReportArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportArticle
         fields = ('slug', 'author_id', 'message', 'reporter_id')
+
+
+class HighlightArticleSerializer(serializers.ModelSerializer):
+    """Serializer for creating a Comment"""
+
+    author = serializers.SerializerMethodField()
+    article = serializers.SerializerMethodField()
+    body = serializers.CharField()
+    highlited_article = serializers.CharField()
+    begin_index = serializers.CharField()
+    end_index = serializers.CharField()
+
+    def get_author(self, highlightcomment):
+        author = ProfileSerialiazer(highlightcomment.author.profiles)
+        return author.data
+
+    def get_article(self, highlightcomment):
+        article = ArticleSerializer(highlightcomment.article)
+        return article.data['id']
+
+    class Meta:
+        model = HighlightArticleModel
+        fields = "__all__"
+
+    def get_user_id(self, obj):
+        return obj.user_id.id

@@ -34,6 +34,12 @@ class TestBase(APITestCase):
                 "email": "sam@gmail.com",
                 "password": "A23DVFRss@"
             }}
+        self.rater_data = {
+            "user": {
+                "username": "allan",
+                "email": "sam@gmail.com",
+                "password": "A23DVFRss@"
+            }}
         self.update_data = {
             "user": {
                 "username": "sam2",
@@ -128,9 +134,9 @@ class TestBase(APITestCase):
         }
 
         self.edit_data = {
-            "comment":{
-            'body': 'sammy'
-        }}
+            "comment": {
+                'body': 'sammy'
+            }}
 
         self.update_comment_data = {
             'body': 'poseidon'
@@ -151,7 +157,7 @@ class TestBase(APITestCase):
                 "title": "another post",
                 "description": "a fitting description",
                 "body": "a body field",
-                "tag_list":[]
+                "tag_list": []
             }
         }
 
@@ -160,7 +166,7 @@ class TestBase(APITestCase):
                 "title": "another post",
                 "description": "a fitting description",
                 "body": "a body field",
-                "tag_list":["tag1", "tag2"]
+                "tag_list": ["tag1", "tag2"]
             }
         }
 
@@ -169,7 +175,7 @@ class TestBase(APITestCase):
                 "title": "another post",
                 "description": "a fitting description",
                 "body": "a body field",
-                "tag_list":["tag1", "tag2", "tag3", "tag4"]
+                "tag_list": ["tag1", "tag2", "tag3", "tag4"]
             }
         }
 
@@ -258,6 +264,35 @@ class TestBase(APITestCase):
 
         self.share_email_data = {
             "email": "jake@gmail.com"
+        }
+
+        self.highlight_index = {
+            "comment": {
+                "body": "you should uncomment this",
+                "begin_index": "1",
+                "end_index": "15"
+            }
+        }
+        self.update_highlight_index = {
+            "comment": {
+                "body": "This is an update",
+                "begin_index": "1",
+                "end_index": "15"
+            }
+        }
+        self.highlight_larger_start_index = {
+            "comment": {
+                "body": "you should uncomment this",
+                "begin_index": "15",
+                "end_index": "1"
+            }
+        }
+        self.highlight_non_integer_index = {
+            "comment": {
+                "body": "you should uncomment this",
+                "begin_index": "a",
+                "end_index": "b"
+            }
         }
 
     def get_token_on_signup(self, ):
@@ -480,3 +515,41 @@ class TestBase(APITestCase):
         twitter_share_url = reverse(
             "articles:twitter_share", kwargs={"slug": slug})
         return twitter_share_url
+
+    def single_highlight_comment_url(self):
+        slug = self.create_article().data['slug']
+        highlighting_url = reverse("articles:highlight", kwargs={"slug": slug})
+        response = self.client.post(
+            highlighting_url, self.highlight_index, format="json")
+        id = response.data['id']
+        url = reverse("articles:highlight_comment",
+                      kwargs={"slug": slug, "id": id})
+        return url
+
+    def single_nonexistant_highlight_comment_url(self):
+        slug = self.create_article().data['slug']
+        url = reverse("articles:highlight", kwargs={"slug": slug})
+        self.client.post(url, self.highlight_index, format="json")
+        url = reverse("articles:highlight_comment",
+                      kwargs={"slug": slug, "id": 18})
+        return url
+
+    def single_highlight_comment_non_existant_article_url(self):
+        self.verify_user()
+        url = reverse("articles:highlight", kwargs={"slug": "slug"})
+        self.client.post(url, self.highlight_index, format="json")
+        url = reverse("articles:highlight_comment",
+                      kwargs={"slug": "slug", "id": 1})
+        return url
+
+    def get_slug(self):
+        return self.create_article().data['slug']
+
+    def create_bookmark_article(self, token):
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        self.client.get(self.get_verify_url(self.user_data))
+        return self.client.post(
+            self.article_url,
+            data=json.dumps(self.valid_article_data),
+            content_type='application/json'
+        )

@@ -25,15 +25,16 @@ class TagCreation(TestBase):
     def test_tag_update(self):
         """Test tags update"""
         self.verify_user()
-        self.client.post(
+        response = self.client.post(
             self.article_url,
             data=json.dumps(self.valid_taglist_data),
             content_type='application/json'
         )
+        slug = response.data['slug']
         response = self.client.put(
             reverse(
                 'articles:detail_article',
-                kwargs={'slug': 'another-post'},
+                kwargs={'slug': slug},
             ),
             data=json.dumps(self.valid_taglist_update_data),
             content_type='application/json'

@@ -1,9 +1,6 @@
 from django.urls import path
 
 from authors.apps.articles.models import LikeDislike
-from authors.apps.articles.views.articles import (GetUpdateDeleteArticle,
-                                                  CreateArticleView,
-                                                  LikeDislikeArticleView)
 from authors.apps.articles.views.bookmark import (BookmarkArticle,
                                                   GetBookmarkedArticles)
 from authors.apps.articles.views.comments import (
@@ -13,11 +10,12 @@ from authors.apps.articles.views.comments import (
 from authors.apps.articles.views.favorite import (FavouriteArticle,
                                                   GetFavouriteArticles)
 from authors.apps.articles.views.articles import (
-     GetUpdateDeleteArticle,CreateArticleView,
-     SearchFilter,LikeDislikeArticleView,
-     ShareArticleViaEmail,ShareArticleViaFacebook,
-     ShareArticleViaTwitter
-     )
+    GetUpdateDeleteArticle, CreateArticleView,
+    SearchFilter, LikeDislikeArticleView,
+    ShareArticleViaEmail, ShareArticleViaFacebook,
+    ShareArticleViaTwitter, HighlightArticle,
+    RetrieveUpdateDeleteHighlight
+)
 from authors.apps.articles.views.report_article import (
     ReportArticleApi, GetReportedArticles
 )
@@ -73,5 +71,11 @@ urlpatterns = [
     path('/report/<slug>', ReportArticleApi.as_view(),
          name='report_article'),
     path('/reported/', GetReportedArticles.as_view(),
-         name='reported_articles')
+         name='reported_articles'),
+    path('/<slug>/highlight',
+         HighlightArticle.as_view(), name='highlight'
+         ),
+    path('/<slug>/highlight/<int:id>',
+         RetrieveUpdateDeleteHighlight.as_view(), name='highlight_comment'
+         )
 ]
