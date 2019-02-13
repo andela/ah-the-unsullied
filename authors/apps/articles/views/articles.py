@@ -23,6 +23,8 @@ from authors.apps.articles.models import (
     LikeDislike,
     HighlightArticleModel
 )
+from authors.apps.articles.models import Article, LikeDislike
+from authors.apps.reading_stats.models import ReadingStats
 from authors.apps.articles.serializers import (
     ArticleSerializer, UpdateArticleSerializer,
     HighlightArticleSerializer, LikeDislikeSerializer,
@@ -96,6 +98,16 @@ class GetUpdateDeleteArticle(RetrieveUpdateDestroyAPIView):
         except Article.DoesNotExist:
             message = error_messages['article_404']
             return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.id:
+            if not ReadingStats.objects.filter(user=request.user,
+                                            article=article).exists():
+                reading_stat = ReadingStats(
+                    user=request.user,
+                    article=article
+                )
+                reading_stat.is_read = True
+                reading_stat.save()
 
         serializer = ArticleSerializer(
             instance=article, context={'request': request})

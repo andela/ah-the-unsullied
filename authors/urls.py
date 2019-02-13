@@ -36,4 +36,7 @@ urlpatterns = [
     path('api/tags', TagView.as_view()),
     path('', schema_view),
     path('api/search', CustomSearchFilter.as_view(), name='search'),
+    path('api/stats', include('authors.apps.reading_stats.urls',
+                              namespace='statics')),
+    path('auth/', include('rest_framework_social_oauth2.urls')),
 ]

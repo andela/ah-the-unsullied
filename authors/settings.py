@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     'authors.apps.articles',
     'authors.apps.ratings',
     'simple_history',
-
+    'authors.apps.reading_stats'
 ]
 
 MIDDLEWARE = [
