@@ -6,7 +6,7 @@ from .models import UserProfile
 
 class ProfileSerialiazer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
-    image = serializers.ImageField()
+    image = serializers.URLField(required=False)
     following = serializers.SerializerMethodField()
 
     def get_following(self, obj):
