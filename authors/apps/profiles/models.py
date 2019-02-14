@@ -2,9 +2,6 @@
 from django.db import models
 from django.db.models.signals import post_save
 
-# Third-party imports
-from cloudinary.models import CloudinaryField
-
 # Local imports
 from authors.apps.authentication.models import User
 from authors.settings import AUTH_USER_MODEL
@@ -26,7 +23,7 @@ class UserProfile(models.Model):
         user = models.OneToOneField(AUTH_USER_MODEL,
                                     on_delete=models.CASCADE,
                                     related_name='profiles')
-        image = CloudinaryField('image', default='')
+        image = models.URLField(blank=True,null=True)
         bio = models.TextField(null=True, blank=True, max_length=255)
         following = models.ManyToManyField(AUTH_USER_MODEL, blank=True,
                                            related_name='followed_by')
