@@ -26,6 +26,7 @@ from .serializers import (
     EmailCheckSerializer, PasswordResetSerializer, ActivateSerializer,
 )
 from .backends import get_jwt_token
+activation_url = os.getenv('ACTIVATION_URL')
 
 
 class RegistrationAPIView(CreateAPIView):
@@ -36,7 +37,7 @@ class RegistrationAPIView(CreateAPIView):
 
     def post(self, request):
         user = request.data.get('user', {})
-
+        
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
@@ -70,7 +71,7 @@ class RegistrationAPIView(CreateAPIView):
         # create activation link
         activation_link = "{scheme}://{host}{route}".format(
             scheme=request.scheme,
-            host=request.get_host(),
+            host=activation_url,
             route=url
         )
         username = user_to_activate.username
@@ -192,7 +193,7 @@ class PasswordReset(CreateAPIView):
             "exp": datetime.utcnow() + timedelta(hours=1)},
             os.getenv('SECRET_KEY'), algorithm='HS256').decode()
 
-        hosting = request.get_host()
+        hosting = activation_url
 
         my_link = \
             'https://' + hosting + '/api/users/password-done/{}'.format(token)
@@ -278,3 +279,4 @@ class SocialAuth(CreateAPIView):
         serializer_data = serializer.data
         serializer_data["token"] = get_jwt_token(user)
         return Response(serializer_data, status=status.HTTP_200_OK)
+
