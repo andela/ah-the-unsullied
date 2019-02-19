@@ -20,17 +20,18 @@ class UserProfileManager(models.Manager):
 
 
 class UserProfile(models.Model):
+
         user = models.OneToOneField(AUTH_USER_MODEL,
                                     on_delete=models.CASCADE,
                                     related_name='profiles')
-        image = models.URLField(blank=True,null=True)
+        image = models.URLField(blank=True, null=True,
+                                default="https://res.cloudinary.com/dadrqjrpw/image/upload/v1550732215/tzpffmzpmsy3lmijpauf.jpg")
         bio = models.TextField(null=True, blank=True, max_length=255)
         following = models.ManyToManyField(AUTH_USER_MODEL, blank=True,
                                            related_name='followed_by')
         followed_at = models.DateField(auto_now_add=True)
         created_at = models.DateTimeField(auto_now_add=True)
         updated_at = models.DateField(auto_now=True)
-
         objects = UserProfileManager()
 
         @property
