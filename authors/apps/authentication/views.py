@@ -1,4 +1,6 @@
 import os
+from builtins import BaseException
+
 from datetime import datetime, timedelta
 
 import jwt
@@ -278,5 +280,7 @@ class SocialAuth(CreateAPIView):
         serializer = UserSerializer(user)
         serializer_data = serializer.data
         serializer_data["token"] = get_jwt_token(user)
+        user.is_verified = True
+        user.save()
         return Response(serializer_data, status=status.HTTP_200_OK)
 
