@@ -78,9 +78,9 @@ MIDDLEWARE = [
 ]
 
 MIDDLEWARE_CLASSES = (
-   'corsheaders.middleware.CorsMiddleware',
-   'django.middleware.common.BrokenLinkEmailsMiddleware',
-   'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 )
 CORS_ORIGIN_ALLOW_ALL = True
 
