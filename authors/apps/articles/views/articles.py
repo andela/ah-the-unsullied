@@ -192,10 +192,18 @@ class LikeDislikeArticleView(ListCreateAPIView):
         except LikeDislike.DoesNotExist:
             article.votes.create(author=request.user, vote=self.vote_type)
             article.save()
-
+        
+        liked = LikeDislike.objects.filter(
+            object_id=article.id, author_id=request.user.id, vote=True
+        ).exists()
+        disliked = LikeDislike.objects.filter(
+            object_id=article.id, author_id=request.user.id, vote=False
+        ).exists()
         return Response({
             "likes": article.votes.likes().count(),
             "dislikes": article.votes.dislikes().count(),
+            "liked": liked,
+            "disliked": disliked
         },
             content_type="application/json",
             status=status.HTTP_201_CREATED

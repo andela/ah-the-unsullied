@@ -26,6 +26,9 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     read_time = serializers.SerializerMethodField()
     likes = serializers.SerializerMethodField()
     dislikes = serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
+    disliked = serializers.SerializerMethodField()
+
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
@@ -43,6 +46,30 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     def get_dislikes(self,value):
         return LikeDislike.objects.dislikes().filter(articles=value).count()
+
+    def get_liked(self, article):
+        try:
+            user = self.context.get('request').user.id
+            article_id = article.id
+            liked = LikeDislike.objects.filter(
+                object_id=article_id, author_id=user, vote=True
+            ).exists()
+
+            return liked
+        except:
+            return None
+
+    def get_disliked(self, article):
+        try:
+            user = self.context.get('request').user.id
+            article_id = article.id
+            disliked = LikeDislike.objects.filter(
+                object_id=article_id, author_id=user, vote=False
+            ).exists()
+
+            return disliked
+        except:
+            return None
 
     class Meta:
         model = Article
