@@ -24,6 +24,8 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     rating = serializers.SerializerMethodField(read_only=True)
     tag_list = TagListSerializerField()
     read_time = serializers.SerializerMethodField()
+    likes = serializers.SerializerMethodField()
+    dislikes = serializers.SerializerMethodField()
 
     def get_author(self, article):
         author = ProfileSerialiazer(article.author.profiles)
@@ -35,6 +37,12 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     def get_read_time(self, article):
         read_time = readtime.of_text(article.body)
         return str(read_time)
+
+    def get_likes(self,value):
+        return LikeDislike.objects.likes().filter(articles=value).count()
+
+    def get_dislikes(self,value):
+        return LikeDislike.objects.dislikes().filter(articles=value).count()
 
     class Meta:
         model = Article
