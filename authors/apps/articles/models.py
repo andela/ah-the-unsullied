@@ -68,6 +68,9 @@ class Article(models.Model):
     read_time = models.TextField(default='null')
     is_reported = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return str(self.title)
 

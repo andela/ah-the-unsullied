@@ -49,7 +49,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UpdateArticleSerializer(serializers.ModelSerializer):
+class UpdateArticleSerializer(TaggitSerializer,serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     body = serializers.CharField(required=True)
     title = serializers.CharField(required=True)
